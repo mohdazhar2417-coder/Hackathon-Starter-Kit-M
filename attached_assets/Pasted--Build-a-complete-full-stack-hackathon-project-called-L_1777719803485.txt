@@ -1,0 +1,710 @@
+	Build a complete full-stack hackathon project called:
+
+	LOGICLENS — Powered by TraceWise AI
+
+	Tagline:
+	See how beginner Java programs actually think.
+
+	====================================================
+	PROJECT GOAL
+	====================================================
+
+	Build a complete full-stack cloud-deployable educational platform that helps beginner programmers understand how Java code executes internally.
+
+	This project must satisfy these product requirements:
+	- complete frontend
+	- complete backend
+	- database integration
+	- authentication and authorization
+	- responsive UI for desktop, tablet, and mobile
+	- real-world problem focus
+	- deployment-ready architecture
+	- professional project structure
+
+	This is not just a flowchart tool.
+	This is not just a code editor.
+	This is a real full-stack educational application.
+
+	====================================================
+	REAL-WORLD PROBLEM
+	====================================================
+
+	This application must address a genuine real-world problem:
+
+	Beginner programmers often struggle to understand how code executes internally. They may memorize syntax, but they fail to understand control flow, loop behavior, condition branching, variable updates, and why a particular output is produced. This leads to poor programming fundamentals, confusion during interviews, and frustration during learning.
+
+	LogicLens solves this by turning beginner Java programs into an interactive execution experience with tracing, explanation, variable tracking, output simulation, and flow visualization.
+
+	Target users:
+	- beginner programming students
+	- coding bootcamp learners
+	- first-year CS students
+	- self-learners preparing for interviews
+
+	====================================================
+	FULL-STACK REQUIREMENTS
+	====================================================
+
+	This must be a complete full-stack application with:
+
+	Frontend:
+	- React
+	- Vite
+	- Tailwind CSS
+	- React Flow
+
+	Backend:
+	- Node.js
+	- Express.js
+
+	Database:
+	- MongoDB Atlas with Mongoose
+
+	Authentication:
+	- JWT-based auth or Firebase Auth
+	- Signup
+	- Login
+	- Logout
+	- Protected routes
+
+	Authorization:
+	- Role-based access
+	- student role
+	- admin role
+
+	Deployment-ready architecture:
+	- frontend deployable on Vercel
+	- backend deployable on Render
+	- MongoDB Atlas connection via environment variables
+
+	====================================================
+	CORE PRODUCT CONCEPT
+	====================================================
+
+	The product combines two systems:
+
+	1. TraceWise AI = internal tracing engine
+	Responsibilities:
+	- detect category
+	- detect subtype
+	- extract statements
+	- normalize program structure
+	- simulate execution
+	- track variables
+	- generate educational explanations
+
+	2. LogicLens = product interface
+	Responsibilities:
+	- code editor
+	- category/program browsing
+	- interactive React Flow visualization
+	- execution controls
+	- variable tracking
+	- output building
+	- saved traces
+	- history
+	- dashboard-like user experience
+
+	====================================================
+	SUPPORTED SCOPE
+	====================================================
+
+	Support only beginner-level structured Java programs.
+
+	Supported constructs:
+	- variable declaration
+	- assignment
+	- arithmetic operators
+	- modulo operator
+	- if / else
+	- else-if chains
+	- switch case
+	- for loops
+	- while loops
+	- nested loops
+	- print / println
+	- simple Scanner-style input simulation
+
+	Do NOT support:
+	- arrays
+	- recursion
+	- advanced OOP
+	- full Java compilation
+	- arbitrary full-language parsing
+	- multithreading
+	- complex file handling
+	- advanced collections
+
+	====================================================
+	FIVE CORE LEARNING CATEGORIES
+	====================================================
+
+	The project must revolve around these 5 categories:
+
+	1. Basic Input / Output & Math
+	2. Conditionals
+	3. Loops
+	4. Number Logic Programs
+	5. Pattern Programs
+
+	====================================================
+	PROGRAM LIBRARY
+	====================================================
+
+	Create a structured sample program library with metadata:
+	- name
+	- category
+	- subtype
+	- code
+	- description
+	- difficulty
+	- supported flag
+	- tags
+
+	CATEGORY 1: BASIC INPUT / OUTPUT & MATH
+	- Hello World
+	- Addition of 2 numbers
+	- Addition of 3 numbers
+	- Swap two numbers using temp
+	- Swap without temp
+	- Area of circle
+	- Area of rectangle
+	- Simple interest
+	- Celsius to Fahrenheit
+	- Fahrenheit to Celsius
+	- Square and cube of number
+	- Average of numbers
+	- Simple calculator using switch case
+
+	CATEGORY 2: CONDITIONALS
+	- Even or Odd
+	- Positive / Negative / Zero
+	- Greatest of 2 numbers
+	- Greatest of 3 numbers
+	- Leap year
+	- Vowel or consonant
+	- Alphabet / digit / special character
+	- Pass or fail
+	- Grade calculator
+	- Voting eligibility
+	- Divisible by 5 and 11
+	- Multiple of a number check
+
+	CATEGORY 3: LOOPS
+	- Print 1 to n
+	- Print n to 1
+	- Even numbers in range
+	- Odd numbers in range
+	- Multiplication table
+	- Sum of n natural numbers
+	- Factorial
+	- Power of number
+	- Reverse counting
+	- Count digits
+	- Sum of digits
+	- Product of digits
+
+	CATEGORY 4: NUMBER LOGIC PROGRAMS
+	- Palindrome number
+	- Armstrong number
+	- Strong number
+	- Prime number
+	- Perfect number
+	- Fibonacci series
+	- Reverse number
+	- Sum of digits
+	- Automorphic number
+	- Neon number
+	- Spy number
+	- Duck number
+
+	CATEGORY 5: PATTERN PROGRAMS
+	- Square pattern
+	- Right triangle star pattern
+	- Inverted triangle
+	- Pyramid
+	- Inverted pyramid
+	- Diamond pattern
+	- Number triangle
+	- Floyd’s triangle
+	- Pascal’s triangle
+	- Palindromic pyramid
+
+	====================================================
+	DEMO-CRITICAL PROGRAMS
+	====================================================
+
+	These must be fully polished and deeply supported:
+	- Even or Odd
+	- Greatest of 3 numbers
+	- Factorial
+	- Sum of n natural numbers
+	- Multiplication table
+	- Prime number
+	- Palindrome number
+	- Fibonacci series
+	- Right triangle star pattern
+	- Pyramid
+
+	Optional strong extras:
+	- Prime numbers in range
+	- GCD / HCF
+
+	====================================================
+	AUTHENTICATION AND USER FEATURES
+	====================================================
+
+	Add complete authentication and basic authorization.
+
+	Student features:
+	- signup/login/logout
+	- access protected dashboard
+	- paste code and analyze
+	- run traces
+	- save traced programs
+	- save favorite sample programs
+	- view own trace history
+	- reopen saved traces
+	- edit profile basics
+
+	Admin features:
+	- login as admin
+	- manage sample programs
+	- manage categories or featured demos
+	- view simple usage overview
+
+	Keep admin area lightweight but real.
+
+	====================================================
+	DATABASE FEATURES
+	====================================================
+
+	Use MongoDB and create schemas/models for:
+
+	1. User
+	- name
+	- email
+	- password hash
+	- role
+	- createdAt
+
+	2. SavedTrace
+	- userId
+	- title
+	- category
+	- subtype
+	- code
+	- customInputs
+	- traceSummary
+	- finalOutput
+	- savedAt
+
+	3. FavoriteProgram
+	- userId
+	- programId or program metadata
+	- addedAt
+
+	4. Optional ActivityLog
+	- userId
+	- action
+	- timestamp
+
+	====================================================
+	TOP 10 CORE FEATURES
+	====================================================
+
+	Implement these 10 major features:
+
+	1. Smart Code Analysis
+	- category detection
+	- subtype detection
+	- confidence percentage
+	- support level
+
+	2. Full Program Tracing Engine
+	- step-by-step execution model
+	- flow control simulation
+	- loop and condition handling
+
+	3. Interactive React Flow Visualization
+	- dynamic graph
+	- premium look
+	- not static
+
+	4. Live Variable Tracker + Variable History
+	- current values
+	- changed state
+	- value history
+
+	5. Step-by-Step Execution + Timeline
+	- prev step
+	- next step
+	- auto run
+	- pause
+	- reset
+	- timeline scrubber
+
+	6. Node Explanation / Teacher Mode
+	- what happened
+	- why it happened
+	- what next
+	- common mistake
+
+	7. Code Line Highlighting
+	- sync graph execution with code lines
+
+	8. Live Output Builder
+	- output builds step by step
+	- pattern output grows row by row
+
+	9. Custom Input Support
+	- user can change n, num, a, b, etc.
+	- retrace using custom values
+
+	10. Why This Output? Explanation
+	- final explanation of result
+
+	====================================================
+	PREMIUM ENHANCEMENTS
+	====================================================
+
+	Add these enhancements:
+
+	- Learning Mode vs Demo Mode
+	- Before/After variable inspector
+	- Branch reason explanation
+	- Variable history timeline
+	- Pattern visual preview
+	- Trace summary dashboard
+	- Execution bookmark points
+	- Concept tags and difficulty labels
+	- Beautiful node detail drawer
+	- Confidence/support card
+
+	====================================================
+	REACT FLOW REQUIREMENTS
+	====================================================
+
+	React Flow must act as the visual storytelling layer.
+
+	It must feel:
+	- interactive
+	- alive
+	- premium
+	- smooth
+	- modern
+	- non-book-like
+
+	Implement:
+	- custom node types
+	- start/end/process/decision/output/input nodes
+	- active node glow
+	- visited node styling
+	- animated loop-back edges
+	- yes/no branch styling
+	- variable chips on nodes
+	- clickable nodes
+	- step timeline sync
+	- polished spacing
+	- minimap and controls
+	- responsive graph area
+
+	====================================================
+	RESPONSIVE DESIGN REQUIREMENTS
+	====================================================
+
+	The application must be fully responsive.
+
+	Desktop:
+	- 3-panel layout
+
+	Tablet:
+	- adapted 2-column layout
+
+	Mobile:
+	- stacked layout
+	- controls accessible
+	- React Flow usable
+	- panels become cards
+	- no broken overflow
+
+	Use Tailwind responsive breakpoints properly.
+
+	====================================================
+	UI STRUCTURE
+	====================================================
+
+	Pages and main sections should include:
+
+	1. Landing Page
+	- problem statement
+	- product value
+	- features
+	- call to action
+	- authentication entry points
+
+	2. Auth Pages
+	- signup
+	- login
+
+	3. User Dashboard
+	- recent traces
+	- saved traces
+	- favorite programs
+	- quick access to categories
+
+	4. Trace Workspace
+	- code editor
+	- category selector
+	- sample program selector
+	- custom input panel
+	- React Flow visualization
+	- explanation panel
+	- variable panel
+	- output panel
+	- save trace button
+
+	5. Saved Traces Page
+	- list saved traces
+	- open trace
+	- delete trace
+
+	6. Favorites Page
+	- favorite programs
+	- open program
+
+	7. Admin Panel
+	- manage sample programs
+	- manage featured content
+
+	====================================================
+	TRACEWISE AI ENGINE
+	====================================================
+
+	Build modular internal engines:
+
+	- detectCategory.js
+	- detectSubtype.js
+	- extractStatements.js
+	- normalizeProgram.js
+	- simulationEngine.js
+	- explainStep.js
+	- explainFinalOutput.js
+	- buildFlowNodes.js
+	- buildFlowEdges.js
+	- layoutGraph.js
+
+	Simulation state should include:
+	- currentStepIndex
+	- currentNodeId
+	- activeCodeLine
+	- variables
+	- previousVariables
+	- changedVariables
+	- variableHistory
+	- output
+	- executionTrace
+	- visitedNodes
+	- branchDecisions
+	- loopIterationCounts
+	- supportLevel
+	- confidence
+
+	====================================================
+	API REQUIREMENTS
+	====================================================
+
+	Build Express API routes for:
+
+	Auth:
+	- POST /api/auth/signup
+	- POST /api/auth/login
+	- GET /api/auth/me
+
+	Tracing:
+	- POST /api/detect
+	- POST /api/explain
+	- POST /api/final-summary
+
+	User trace management:
+	- POST /api/traces
+	- GET /api/traces
+	- GET /api/traces/:id
+	- DELETE /api/traces/:id
+
+	Favorites:
+	- POST /api/favorites
+	- GET /api/favorites
+	- DELETE /api/favorites/:id
+
+	Admin:
+	- GET /api/admin/programs
+	- POST /api/admin/programs
+	- PUT /api/admin/programs/:id
+	- DELETE /api/admin/programs/:id
+
+	====================================================
+	PROJECT STRUCTURE
+	====================================================
+
+	Use a clean full-stack structure like:
+
+	logiclens/
+	  client/
+		src/
+		  pages/
+			LandingPage.jsx
+			LoginPage.jsx
+			SignupPage.jsx
+			DashboardPage.jsx
+			WorkspacePage.jsx
+			SavedTracesPage.jsx
+			FavoritesPage.jsx
+			AdminPage.jsx
+		  components/
+			Navbar.jsx
+			ControlBar.jsx
+			ModeSwitcher.jsx
+			CategorySelector.jsx
+			ProgramSelector.jsx
+			CodeEditor.jsx
+			InputPanel.jsx
+			DetectionCard.jsx
+			ConfidenceCard.jsx
+			FlowCanvas.jsx
+			CustomFlowNode.jsx
+			VariablePanel.jsx
+			VariableHistoryPanel.jsx
+			OutputPanel.jsx
+			PatternPreviewPanel.jsx
+			ExplanationPanel.jsx
+			WhyOutputPanel.jsx
+			TraceSummaryPanel.jsx
+			StepTimeline.jsx
+			NodeDetailsDrawer.jsx
+			ProtectedRoute.jsx
+		  data/
+			samplePrograms.js
+		  engines/
+			detect/
+			  detectCategory.js
+			  detectSubtype.js
+			parse/
+			  extractStatements.js
+			  normalizeProgram.js
+			simulate/
+			  simulationEngine.js
+			flow/
+			  buildFlowNodes.js
+			  buildFlowEdges.js
+			  layoutGraph.js
+			explain/
+			  explainStep.js
+			  explainFinalOutput.js
+		  services/
+			api.js
+			auth.js
+		  App.jsx
+		  main.jsx
+
+	  server/
+		config/
+		  db.js
+		controllers/
+		middleware/
+		  authMiddleware.js
+		  roleMiddleware.js
+		models/
+		  User.js
+		  SavedTrace.js
+		  FavoriteProgram.js
+		routes/
+		  authRoutes.js
+		  traceRoutes.js
+		  favoriteRoutes.js
+		  adminRoutes.js
+		  detect.js
+		  explain.js
+		  finalSummary.js
+		index.js
+
+	====================================================
+	DEPLOYMENT READINESS
+	====================================================
+
+	Prepare the project for deployment.
+
+	Frontend:
+	- Vercel-ready
+
+	Backend:
+	- Render-ready
+
+	Database:
+	- MongoDB Atlas
+
+	Use environment variables for:
+	- Mongo URI
+	- JWT secret
+	- frontend URL
+	- backend URL
+
+	Provide:
+	- .env.example
+	- clean README with deployment steps
+
+	====================================================
+	README REQUIREMENTS
+	====================================================
+
+	Generate a strong README including:
+	- project overview
+	- real-world problem
+	- solution
+	- features
+	- tech stack
+	- architecture
+	- setup steps
+	- environment variables
+	- deployment steps
+	- demo credentials if needed
+
+	====================================================
+	SUBMISSION QUALITY
+	====================================================
+
+	The final app should feel like:
+	- a real educational SaaS-style platform
+	- a visual debugger for beginners
+	- a polished full-stack web product
+
+	It should not feel like:
+	- a toy flowchart app
+	- a static diagram generator
+	- an unfinished hackathon prototype
+
+	====================================================
+	DELIVERY EXPECTATION
+	====================================================
+
+	Generate the complete working full-stack project code with:
+	- frontend
+	- backend
+	- database models
+	- auth flow
+	- protected routes
+	- responsive UI
+	- React Flow visualization
+	- tracing engine
+	- saved traces functionality
+	- favorites functionality
+	- deployment-ready structure
+
+	Prioritize:
+	1. correct full-stack structure
+	2. auth + database compliance
+	3. responsive polished UI
+	4. strong React Flow experience
+	5. educational tracing quality
+
+	Now generate the complete implementation.      

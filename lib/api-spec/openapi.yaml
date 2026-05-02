@@ -3,13 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: LogicLens API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: traces
+    description: Saved trace operations
+  - name: favorites
+    description: Favorite programs
+  - name: programs
+    description: Sample programs library
+  - name: admin
+    description: Admin operations
 paths:
   /healthz:
     get:
@@ -24,6 +34,394 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /traces:
+    get:
+      operationId: getTraces
+      tags: [traces]
+      summary: Get user's saved traces
+      responses:
+        "200":
+          description: List of saved traces
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SavedTrace"
+    post:
+      operationId: createTrace
+      tags: [traces]
+      summary: Save a trace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTraceBody"
+      responses:
+        "201":
+          description: Trace saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedTrace"
+
+  /traces/{id}:
+    get:
+      operationId: getTrace
+      tags: [traces]
+      summary: Get a specific saved trace
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Saved trace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedTrace"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteTrace
+      tags: [traces]
+      summary: Delete a saved trace
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /favorites:
+    get:
+      operationId: getFavorites
+      tags: [favorites]
+      summary: Get user's favorite programs
+      responses:
+        "200":
+          description: List of favorites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FavoriteProgram"
+    post:
+      operationId: addFavorite
+      tags: [favorites]
+      summary: Add a program to favorites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddFavoriteBody"
+      responses:
+        "201":
+          description: Added to favorites
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FavoriteProgram"
+
+  /favorites/{id}:
+    delete:
+      operationId: removeFavorite
+      tags: [favorites]
+      summary: Remove from favorites
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /programs:
+    get:
+      operationId: getPrograms
+      tags: [programs]
+      summary: Get all sample programs
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: difficulty
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of sample programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SampleProgram"
+
+  /programs/{id}:
+    get:
+      operationId: getProgram
+      tags: [programs]
+      summary: Get a specific sample program
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Sample program
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SampleProgram"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /programs/categories:
+    get:
+      operationId: getCategories
+      tags: [programs]
+      summary: Get all program categories with counts
+      responses:
+        "200":
+          description: Categories summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategorySummary"
+
+  /programs/featured:
+    get:
+      operationId: getFeaturedPrograms
+      tags: [programs]
+      summary: Get featured/demo-critical programs
+      responses:
+        "200":
+          description: Featured programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SampleProgram"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [traces]
+      summary: Get user dashboard stats
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /admin/programs:
+    get:
+      operationId: adminGetPrograms
+      tags: [admin]
+      summary: Admin - get all programs
+      responses:
+        "200":
+          description: All programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SampleProgram"
+    post:
+      operationId: adminCreateProgram
+      tags: [admin]
+      summary: Admin - create a program
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProgramBody"
+      responses:
+        "201":
+          description: Program created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SampleProgram"
+
+  /admin/programs/{id}:
+    put:
+      operationId: adminUpdateProgram
+      tags: [admin]
+      summary: Admin - update a program
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProgramBody"
+      responses:
+        "200":
+          description: Updated program
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SampleProgram"
+    delete:
+      operationId: adminDeleteProgram
+      tags: [admin]
+      summary: Admin - delete a program
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /admin/stats:
+    get:
+      operationId: adminGetStats
+      tags: [admin]
+      summary: Admin - get usage stats
+      responses:
+        "200":
+          description: Admin stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +432,291 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+
+    SignupBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [student, admin]
+      required:
+        - name
+        - email
+        - password
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - role
+        - createdAt
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    SavedTrace:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        category:
+          type: string
+        subtype:
+          type: string
+        code:
+          type: string
+        customInputs:
+          type: ["object", "null"]
+        traceSummary:
+          type: ["string", "null"]
+        finalOutput:
+          type: ["string", "null"]
+        savedAt:
+          type: string
+      required:
+        - id
+        - userId
+        - title
+        - category
+        - subtype
+        - code
+        - savedAt
+
+    CreateTraceBody:
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+        subtype:
+          type: string
+        code:
+          type: string
+        customInputs:
+          type: ["object", "null"]
+        traceSummary:
+          type: ["string", "null"]
+        finalOutput:
+          type: ["string", "null"]
+      required:
+        - title
+        - category
+        - subtype
+        - code
+
+    FavoriteProgram:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        programId:
+          type: integer
+        programName:
+          type: string
+        programCategory:
+          type: string
+        addedAt:
+          type: string
+      required:
+        - id
+        - userId
+        - programId
+        - programName
+        - programCategory
+        - addedAt
+
+    AddFavoriteBody:
+      type: object
+      properties:
+        programId:
+          type: integer
+        programName:
+          type: string
+        programCategory:
+          type: string
+      required:
+        - programId
+        - programName
+        - programCategory
+
+    SampleProgram:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        subtype:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        difficulty:
+          type: string
+        featured:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - category
+        - subtype
+        - code
+        - description
+        - difficulty
+        - featured
+        - tags
+
+    CreateProgramBody:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        subtype:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        difficulty:
+          type: string
+        featured:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - category
+        - subtype
+        - code
+        - description
+        - difficulty
+
+    CategorySummary:
+      type: object
+      properties:
+        category:
+          type: string
+        count:
+          type: integer
+        description:
+          type: string
+      required:
+        - category
+        - count
+        - description
+
+    DashboardStats:
+      type: object
+      properties:
+        totalTraces:
+          type: integer
+        totalFavorites:
+          type: integer
+        recentTraces:
+          type: array
+          items:
+            $ref: "#/components/schemas/SavedTrace"
+        categoriesExplored:
+          type: array
+          items:
+            type: string
+      required:
+        - totalTraces
+        - totalFavorites
+        - recentTraces
+        - categoriesExplored
+
+    AdminStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalTraces:
+          type: integer
+        totalFavorites:
+          type: integer
+        totalPrograms:
+          type: integer
+        programsByCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategorySummary"
+      required:
+        - totalUsers
+        - totalTraces
+        - totalFavorites
+        - totalPrograms
+        - programsByCategory
