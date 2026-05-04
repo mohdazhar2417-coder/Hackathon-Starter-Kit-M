@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useGetTraces, useDeleteTrace } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function TracesPage() {
   const { toast } = useToast();
+  useEffect(() => { document.title = "Saved Traces · LogicLens"; }, []);
   const { data: traces = [], refetch, isLoading } = useGetTraces();
   const deleteTrace = useDeleteTrace();
 

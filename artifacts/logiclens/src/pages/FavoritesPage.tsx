@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useGetFavorites, useRemoveFavorite } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function FavoritesPage() {
   const { toast } = useToast();
+  useEffect(() => { document.title = "Favorites · LogicLens"; }, []);
   const { data: favorites = [], refetch, isLoading } = useGetFavorites();
   const removeFav = useRemoveFavorite();
 

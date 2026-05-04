@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminGetPrograms, useAdminDeleteProgram, useAdminGetStats } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AdminPage() {
   const { user } = useAuth();
+  useEffect(() => { document.title = "Admin Panel · LogicLens"; }, []);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 

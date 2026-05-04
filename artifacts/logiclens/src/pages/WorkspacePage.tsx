@@ -142,6 +142,12 @@ export default function WorkspacePage() {
   });
 
   useEffect(() => {
+    document.title = selectedProgram
+      ? `${selectedProgram.name} · LogicLens`
+      : "Workspace · LogicLens";
+  }, [selectedProgram]);
+
+  useEffect(() => {
     if (selectedProgram && !simResult) {
       const defaults: Record<string, string> = {};
       if (selectedProgram.defaultInputs) {
@@ -152,6 +158,36 @@ export default function WorkspacePage() {
       setCustomInputs(defaults);
     }
   }, [selectedProgram]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (!simResult) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setAutoPlay(false);
+        setActiveStep((prev) => Math.min(prev + 1, simResult.steps.length - 1));
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setAutoPlay(false);
+        setActiveStep((prev) => Math.max(prev - 1, 0));
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setAutoPlay(false);
+        setActiveStep(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setAutoPlay(false);
+        setActiveStep(simResult.steps.length - 1);
+      } else if (e.key === " ") {
+        e.preventDefault();
+        setAutoPlay((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [simResult]);
 
   useEffect(() => {
     if (autoPlay && simResult) {

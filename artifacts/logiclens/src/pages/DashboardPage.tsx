@@ -1,13 +1,15 @@
+import { useEffect } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGetPrograms } from "@workspace/api-client-react";
+import { useGetPrograms, useGetTraces, useGetFavorites } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getFeaturedPrograms, CATEGORIES } from "@/data/samplePrograms";
 import {
   Code2, GitBranch, RefreshCw, Hash, Grid3X3, Calculator,
-  Play, BookMarked, Heart, ChevronRight, Zap, Star,
+  Play, BookMarked, Heart, ChevronRight, Zap, Star, ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -35,7 +37,13 @@ const DIFFICULTY_BADGE: Record<string, string> = {
 export default function DashboardPage() {
   const { user } = useAuth();
   const { data: programs = [] } = useGetPrograms();
+  const { data: traces = [] } = useGetTraces();
+  const { data: favorites = [] } = useGetFavorites();
   const featured = getFeaturedPrograms();
+
+  useEffect(() => {
+    document.title = `Dashboard · LogicLens`;
+  }, []);
 
   const programsByCategory = CATEGORIES.map((cat) => ({
     ...cat,
@@ -44,28 +52,34 @@ export default function DashboardPage() {
   }));
 
   const greeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 18) return "Good afternoon";
     return "Good evening";
   };
+
+  const isNewUser = traces.length === 0 && favorites.length === 0;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+
         {/* Header */}
-        <div className="mb-10">
-          <div className="flex items-start justify-between">
+        <div className="mb-8">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="text-2xl font-bold mb-1">
-                {greeting()}, {user?.name?.split(" ")[0]}
+                {greeting()},{" "}
+                <span className="text-primary">{user?.name?.split(" ")[0]}</span>
               </h1>
               <p className="text-muted-foreground text-sm">
-                What Java concept would you like to explore today?
+                {isNewUser
+                  ? "Welcome to LogicLens! Pick a program below to start tracing."
+                  : "What Java concept would you like to explore today?"}
               </p>
             </div>
             <Link href="/workspace">
-              <Button className="gap-2" data-testid="btn-open-workspace">
+              <Button className="gap-2 shadow-sm shadow-primary/20" data-testid="btn-open-workspace">
                 <Play className="h-4 w-4" />
                 Open Workspace
               </Button>
@@ -73,23 +87,66 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick stats */}
+        {/* Get started banner for new users */}
+        {isNewUser && (
+          <Card className="mb-8 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20 overflow-hidden">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/20">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold mb-0.5">Start your first trace</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Pick any program, hit "Analyze &amp; Trace", and watch how Java executes it step by step.
+                  </p>
+                </div>
+                <Link href="/workspace">
+                  <Button className="gap-2 flex-shrink-0">
+                    Try it now
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
           {[
-            { label: "Total Programs", value: programs.length || "30+", icon: <Code2 className="h-4 w-4" />, color: "text-primary" },
-            { label: "Categories", value: "5", icon: <Zap className="h-4 w-4" />, color: "text-emerald-400" },
-            { label: "Saved Traces", value: "–", icon: <BookMarked className="h-4 w-4" />, color: "text-amber-400" },
-            { label: "Favorites", value: "–", icon: <Heart className="h-4 w-4" />, color: "text-pink-400" },
+            {
+              label: "Total Programs", value: programs.length || "30+",
+              icon: <Code2 className="h-4 w-4" />, color: "text-primary",
+              href: "/workspace",
+            },
+            {
+              label: "Categories", value: "5",
+              icon: <Zap className="h-4 w-4" />, color: "text-emerald-400",
+              href: "/workspace",
+            },
+            {
+              label: "Saved Traces", value: traces.length,
+              icon: <BookMarked className="h-4 w-4" />, color: "text-amber-400",
+              href: "/traces",
+            },
+            {
+              label: "Favorites", value: favorites.length,
+              icon: <Heart className="h-4 w-4" />, color: "text-pink-400",
+              href: "/favorites",
+            },
           ].map((stat) => (
-            <Card key={stat.label} className="bg-card border-border">
-              <CardContent className="p-4">
-                <div className={`flex items-center gap-2 ${stat.color} mb-2`}>
-                  {stat.icon}
-                  <span className="text-xs font-medium text-muted-foreground">{stat.label}</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              </CardContent>
-            </Card>
+            <Link key={stat.label} href={stat.href}>
+              <Card className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer">
+                <CardContent className="p-4">
+                  <div className={`flex items-center gap-2 ${stat.color} mb-2`}>
+                    {stat.icon}
+                    <span className="text-xs font-medium text-muted-foreground">{stat.label}</span>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
 
@@ -109,7 +166,10 @@ export default function DashboardPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {featured.slice(0, 6).map((prog) => (
               <Link key={prog.id} href={`/workspace?program=${prog.id}`}>
-                <Card className="bg-card border-border hover:border-primary/40 hover:bg-card/80 transition-all cursor-pointer group" data-testid={`featured-program-${prog.id}`}>
+                <Card
+                  className="bg-card border-border hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all cursor-pointer group"
+                  data-testid={`featured-program-${prog.id}`}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium ${CATEGORY_COLORS[prog.category] ?? "text-muted-foreground bg-muted"}`}>
@@ -135,12 +195,46 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* All Categories */}
+        {/* Recent saves if any */}
+        {traces.length > 0 && (
+          <section className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <BookMarked className="h-4 w-4 text-amber-400" />
+                <h2 className="text-base font-semibold">Recent Saves</h2>
+              </div>
+              <Link href="/traces">
+                <Button variant="ghost" size="sm" className="text-xs gap-1 text-muted-foreground">
+                  All traces <ChevronRight className="h-3 w-3" />
+                </Button>
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {traces.slice(0, 3).map((trace) => (
+                <Link key={trace.id} href={`/workspace?subtype=${trace.subtype}`}>
+                  <Card className="bg-card border-border hover:border-amber-400/30 transition-colors cursor-pointer group">
+                    <CardContent className="p-4">
+                      <p className="text-sm font-medium group-hover:text-primary transition-colors truncate mb-1">{trace.title}</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {trace.category && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5">{trace.category}</Badge>
+                        )}
+                        <span>{trace.savedAt ? new Date(trace.savedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Browse by Category */}
         <section>
           <h2 className="text-base font-semibold mb-4">Browse by Category</h2>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {programsByCategory.map((cat) => (
-              <Card key={cat.name} className="bg-card border-border">
+              <Card key={cat.name} className="bg-card border-border hover:border-border/80 transition-colors">
                 <CardHeader className="pb-3 pt-4 px-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
