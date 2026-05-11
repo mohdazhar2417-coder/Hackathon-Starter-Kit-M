@@ -61,6 +61,8 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    sourcemap: false, // Disable sourcemaps to bypass the transformation error
+    reportCompressedSize: false,
   },
   server: {
     port,
