@@ -305,6 +305,13 @@ export default function WorkspacePage() {
 
           <div className="h-8 w-px bg-border/30 mx-1" />
 
+          <Button 
+            size="sm" 
+            className="h-10 px-6 rounded-xl bg-primary text-primary-foreground gap-2 font-bold text-xs shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            onClick={handleRun}
+            disabled={isRunning || !selectedProgram}
+          >
+            {isRunning ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             {simResult ? "Re-Analyze" : "Build Flowchart"}
           </Button>
 
