@@ -5,6 +5,7 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { apiLimiter } from "./middlewares/rateLimit.js";
 import passport from "./lib/passport.js";
+import { env } from "./lib/env.js";
 
 const app: Express = express();
 
