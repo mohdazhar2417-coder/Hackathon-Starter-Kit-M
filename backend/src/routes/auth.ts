@@ -101,15 +101,17 @@ router.get("/me", authMiddleware, async (req, res): Promise<void> => {
 // Google OAuth routes
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
+// This route handles the callback from Google
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false, failureRedirect: "/login" }),
+  (req, res, next) => {
+    // Manually handle the passport authentication to ensure it captures the code
+    passport.authenticate("google", { session: false, failureRedirect: "/login" })(req, res, next);
+  },
   (req, res) => {
     const user = req.user as UserRecord;
     const token = signToken({ userId: user.id, email: user.email, role: user.role });
     
-    // Redirect back to frontend with token
-    // In a production app, you might want to use a more secure way to pass the token
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
     res.redirect(`${frontendUrl}/login?token=${token}`);
   }
