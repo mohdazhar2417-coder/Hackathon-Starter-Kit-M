@@ -168,17 +168,17 @@ function AnimatedHero() {
   const activeLine = step.line;
 
   return (
-    <div className="relative">
+    <div className="relative max-w-[500px] mx-auto lg:max-w-none">
       <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xl ring-1 ring-white/5">
         {/* Window chrome */}
         <div className="flex items-center gap-2 border-b border-border px-4 py-3 bg-muted/30">
           <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
           <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
           <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
-          <span className="ml-2 text-xs text-muted-foreground font-mono">EvenOdd.java</span>
-          <div className="ml-auto flex items-center gap-1.5">
+          <span className="ml-2 text-xs text-muted-foreground font-mono truncate">EvenOdd.java</span>
+          <div className="ml-auto flex items-center gap-1.5 shrink-0">
             <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] text-primary font-medium">LIVE TRACE</span>
+            <span className="text-[10px] text-primary font-medium hidden xs:block">LIVE TRACE</span>
           </div>
         </div>
 
@@ -194,7 +194,7 @@ function AnimatedHero() {
               <span className={`select-none text-right shrink-0 w-5 text-[11px] leading-6 ${activeLine === i + 1 ? "text-primary font-bold" : "text-muted-foreground/40"}`}>
                 {i + 1}
               </span>
-              <span className="whitespace-pre text-foreground/85 text-[12px] leading-6">{line}</span>
+              <span className="whitespace-pre text-foreground/85 text-[12px] leading-6 overflow-x-auto no-scrollbar">{line}</span>
             </div>
           ))}
         </div>
@@ -203,25 +203,25 @@ function AnimatedHero() {
         <div className={`border-t border-border bg-muted/20 px-4 py-3 transition-opacity duration-200 ${animating ? "opacity-40" : "opacity-100"}`}>
           <div className="flex items-center gap-2 mb-1.5">
             <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            <span className={`text-xs font-semibold ${TYPE_COLORS[step.type] ?? "text-primary"}`}>
-              Step {stepIdx + 1} of {STEPS.length} — {step.label}
+            <span className={`text-xs font-semibold truncate ${TYPE_COLORS[step.type] ?? "text-primary"}`}>
+              Step {stepIdx + 1} — {step.label}
             </span>
-            <div className="ml-auto flex gap-1">
+            <div className="ml-auto flex gap-1 shrink-0">
               {STEPS.map((_, i) => (
                 <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === stepIdx ? "w-4 bg-primary" : "w-1 bg-border"}`} />
               ))}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">{step.detail}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{step.detail}</p>
         </div>
       </div>
 
-      {/* Floating variable card */}
-      <div className={`absolute -right-4 top-8 rounded-lg border border-border bg-card/95 backdrop-blur p-3 shadow-xl w-44 transition-all duration-300 ${animating ? "opacity-60 scale-95" : "opacity-100 scale-100"}`}>
+      {/* Floating variable card - Hidden or simplified on very small screens */}
+      <div className={`absolute -right-2 sm:-right-4 top-8 rounded-lg border border-border bg-card/95 backdrop-blur p-2 sm:p-3 shadow-xl w-32 sm:w-44 transition-all duration-300 z-10 ${animating ? "opacity-60 scale-95" : "opacity-100 scale-100"} hidden xs:block`}>
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Variables</p>
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {Object.entries(step.vars).map(([k, v]) => (
-            <div key={k} className={`flex items-center justify-between rounded px-1.5 py-1 text-xs font-mono transition-colors ${step.highlighted === k ? "bg-primary/10 ring-1 ring-primary/20" : "bg-muted/30"}`}>
+            <div key={k} className={`flex items-center justify-between rounded px-1.5 py-1 text-[10px] sm:text-xs font-mono transition-colors ${step.highlighted === k ? "bg-primary/10 ring-1 ring-primary/20" : "bg-muted/30"}`}>
               <span className={step.highlighted === k ? "text-primary font-semibold" : "text-muted-foreground"}>{k}</span>
               <span className={step.highlighted === k ? "text-primary font-bold" : "text-foreground"}>{JSON.stringify(v)}</span>
             </div>
@@ -231,12 +231,12 @@ function AnimatedHero() {
 
       {/* Floating output card */}
       {step.type === "output" && (
-        <div className="absolute -left-4 -bottom-4 rounded-lg border border-emerald-500/30 bg-card/95 backdrop-blur p-3 shadow-xl">
+        <div className="absolute -left-2 sm:-left-4 -bottom-4 rounded-lg border border-emerald-500/30 bg-card/95 backdrop-blur p-2 sm:p-3 shadow-xl z-10">
           <div className="flex items-center gap-1.5 mb-1">
             <Terminal className="h-3 w-3 text-emerald-400" />
             <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Output</p>
           </div>
-          <code className="text-xs font-mono text-emerald-300">7 is Odd</code>
+          <code className="text-[10px] sm:text-xs font-mono text-emerald-300">7 is Odd</code>
         </div>
       )}
     </div>
@@ -261,14 +261,14 @@ export default function LandingPage() {
                 <Zap className="h-3 w-3 text-primary" />
                 Powered by TraceWise AI
               </Badge>
-              <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-[1.05] mb-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6 text-balance">
                 See how your{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-cyan-400">
                   Java code
                 </span>{" "}
                 actually thinks
               </h1>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed max-w-lg">
+              <p className="text-base sm:text-lg text-muted-foreground mb-8 leading-relaxed max-w-lg text-balance">
                 Stop guessing at output. LogicLens turns beginner Java programs into interactive
                 execution stories — step by step, variable by variable, with real explanations
                 at every decision point.

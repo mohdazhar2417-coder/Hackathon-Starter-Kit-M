@@ -51,9 +51,9 @@ export const LoopTraceTable: React.FC = () => {
     .filter(v => !["args", "scanner"].includes(v));
 
   return (
-    <div className="h-full flex flex-col">
-      <ScrollArea className="flex-1">
-        <Table>
+    <div className="h-full flex flex-col overflow-hidden">
+      <ScrollArea className="flex-1" orientation="both">
+        <Table className="min-w-[400px]">
           <TableHeader className="bg-muted/80 sticky top-0 z-10">
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-12 text-[10px] font-black uppercase text-center border-r">Iter</TableHead>
