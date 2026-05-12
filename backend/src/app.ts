@@ -1,7 +1,8 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
-import router from "./routes";
+import router from "./routes/index.js";
+import authRouter from "./routes/auth.js";
 import { logger } from "./lib/logger";
 import { apiLimiter } from "./middlewares/rateLimit.js";
 import passport from "./lib/passport.js";
@@ -39,6 +40,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 
+app.use("/api/auth", authRouter);
 app.use("/api", router);
 
 export default app;

@@ -11,7 +11,6 @@ import paymentsRouter from "./payments";
 const router: IRouter = Router();
 
 router.use(healthRouter);
-router.use("/auth", authRouter);
 router.use("/traces", tracesRouter);
 router.use("/favorites", favoritesRouter);
 router.use("/programs", programsRouter);
