@@ -387,6 +387,7 @@ export async function getTraceByIdForUser(id: number, userId: number): Promise<T
     return trace ? cloneTrace(trace) : null;
   }
 
+  const { db, savedTracesTable } = await loadDbModule();
   const [trace] = await db
     .select()
     .from(savedTracesTable)
