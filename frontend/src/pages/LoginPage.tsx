@@ -28,13 +28,15 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     if (token) {
-      // In a real app, you'd fetch the user profile with the token
-      // For now, we'll set the token and try to redirect
-      login(token, null as any); // null user for now, AuthContext should handle fetching user if needed
+      // Set the token
+      login(token, null as any);
       toast({ title: "Welcome!", description: "Signed in with Google successfully." });
-      setLocation("/dashboard");
+      
+      // Clean the URL (remove the token) and jump to dashboard
+      window.history.replaceState({}, document.title, "/login");
+      setTimeout(() => setLocation("/dashboard"), 100);
     }
-  }, []);
+  }, [login, setLocation, toast]);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
