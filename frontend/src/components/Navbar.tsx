@@ -37,12 +37,12 @@ export function Navbar() {
           {/* Logo */}
           <Link href={isAuthenticated ? "/dashboard" : "/"}>
             <div className="flex items-center gap-2.5 cursor-pointer group" data-testid="nav-logo">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/30 group-hover:bg-primary/20 transition-colors flex-shrink-0">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/30 group-hover:bg-primary/20 transition-colors">
                 <Code2 className="h-4 w-4 text-primary" />
               </div>
-              <div className="flex flex-col leading-none truncate">
-                <span className="text-sm font-bold tracking-tight text-foreground truncate">LogicLens</span>
-                <span className="text-[10px] text-muted-foreground font-medium hidden xs:block">TraceWise AI</span>
+              <div className="flex flex-col leading-none">
+                <span className="text-sm font-bold tracking-tight text-foreground">LogicLens</span>
+                <span className="text-[10px] text-muted-foreground font-medium">TraceWise AI</span>
               </div>
             </div>
           </Link>
@@ -178,12 +178,12 @@ export function Navbar() {
                 </Sheet>
               </>
             ) : (
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-2">
                 <Link href="/login">
-                  <Button variant="ghost" size="sm" className="px-2 sm:px-3 text-xs sm:text-sm" data-testid="nav-login">Sign in</Button>
+                  <Button variant="ghost" size="sm" data-testid="nav-login">Sign in</Button>
                 </Link>
                 <Link href="/signup">
-                  <Button size="sm" className="px-3 sm:px-4 text-xs sm:text-sm" data-testid="nav-signup">Get Started</Button>
+                  <Button size="sm" data-testid="nav-signup">Get Started</Button>
                 </Link>
               </div>
             )}

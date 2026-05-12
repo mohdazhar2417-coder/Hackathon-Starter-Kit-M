@@ -64,11 +64,9 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
 
 function AppLayout({ children, showNav = true }: { children: React.ReactNode; showNav?: boolean }) {
   return (
-    <div className="min-h-screen bg-background dark flex flex-col">
+    <div className="min-h-screen bg-background dark">
       {showNav && <Navbar />}
-      <main className="flex-1 flex flex-col min-h-0">
-        {children}
-      </main>
+      {children}
     </div>
   );
 }

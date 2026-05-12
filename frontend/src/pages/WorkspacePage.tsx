@@ -479,24 +479,96 @@ export default function WorkspacePage() {
 
       <div className="flex-1 flex min-h-0 overflow-hidden relative">
         {/* Sidebar */}
-        {!isMobile && showSidebar && (
+        {showSidebar && (
           <aside className="w-80 border-r border-border/40 bg-[#0a0a0b]/50 backdrop-blur-3xl flex flex-col shrink-0 z-20 transition-all duration-500">
-            <SidebarContent 
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              filteredPrograms={filteredPrograms}
-              selectedProgram={selectedProgram}
-              selectProgram={selectProgram}
-            />
+            <div className="p-6 border-b border-border/40 space-y-6">
+              <div className="space-y-1.5">
+                <h2 className="text-[10px] font-black uppercase text-primary tracking-[0.2em]">Algorithm Library</h2>
+                <p className="text-xs text-white/40">Select a logic pattern to visualize</p>
+              </div>
+              
+              <div className="relative group">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-primary transition-colors" />
+                <Input
+                  placeholder="Filter logic..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-11 h-12 text-xs bg-white/5 border-white/5 rounded-2xl focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-white/20"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {["All", ...CATEGORIES.map(c => c.name)].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={cn(
+                      "px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
+                      selectedCategory === cat 
+                        ? "bg-primary border-primary text-primary-foreground shadow-[0_0_20px_rgba(var(--primary),0.3)]" 
+                        : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10 hover:text-white"
+                    )}
+                  >
+                    {cat.split(' ')[0]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <ScrollArea className="flex-1">
+              <div className="p-4 space-y-2">
+                {filteredPrograms.map(prog => (
+                  <button
+                    key={prog.id}
+                    onClick={() => selectProgram(prog)}
+                    className={cn(
+                      "w-full text-left rounded-2xl p-4 transition-all relative overflow-hidden group",
+                      selectedProgram?.id === prog.id 
+                        ? "bg-primary/10 border border-primary/20" 
+                        : "hover:bg-white/[0.03] border border-transparent"
+                    )}
+                  >
+                    {selectedProgram?.id === prog.id && (
+                      <motion.div 
+                        layoutId="activeSide"
+                        className="absolute left-0 top-0 bottom-0 w-1 bg-primary"
+                      />
+                    )}
+                    <div className="flex flex-col gap-1">
+                      <div className={cn(
+                        "text-[11px] font-black uppercase tracking-tight transition-colors",
+                        selectedProgram?.id === prog.id ? "text-primary" : "text-white/70 group-hover:text-white"
+                      )}>
+                        {prog.name}
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className={cn("text-[9px] font-black uppercase tracking-tighter opacity-60")}>
+                          {prog.category}
+                        </span>
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-[8px] h-4 px-1.5 font-black uppercase border-none",
+                            prog.difficulty === "beginner" ? "bg-emerald-500/10 text-emerald-500" :
+                            prog.difficulty === "intermediate" ? "bg-amber-500/10 text-amber-500" :
+                            "bg-rose-500/10 text-rose-500"
+                          )}
+                        >
+                          {prog.difficulty}
+                        </Badge>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
           </aside>
         )}
 
 
         {/* Visualization Area */}
         <div className="flex-1 flex flex-col min-w-0 bg-muted/5 relative">
-          <ResizablePanelGroup direction={isMobile ? "vertical" : "vertical"} className="flex-1">
+          <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="flex-1">
             <ResizablePanel defaultSize={isMobile ? 60 : 75} minSize={30} className="relative">
               <div className="absolute inset-0 z-0">
                 {simResult ? (
@@ -553,7 +625,7 @@ export default function WorkspacePage() {
                         <JavaEditor 
                           code={selectedProgram.code} 
                           highlightLine={currentStep?.lineNumber} 
-                          width={isMobile ? window.innerWidth - 48 : editorSize.width}
+                          width={isMobile ? (typeof window !== 'undefined' ? window.innerWidth - 48 : 300) : editorSize.width}
                           height={isMobile ? 200 : editorSize.height}
                         />
                       )}
@@ -587,16 +659,16 @@ export default function WorkspacePage() {
             <ResizableHandle withHandle />
 
             {/* Partitioned Lower Panel */}
-            <ResizablePanel defaultSize={isMobile ? 40 : 25} minSize={20}>
+            <ResizablePanel defaultSize={25} minSize={20}>
               <div className="h-full bg-card border-t border-border flex flex-col">
-                <div className="px-4 sm:px-6 h-9 sm:h-10 border-b border-border bg-muted/20 flex items-center shrink-0">
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Execution Workspace</span>
+                <div className="px-6 h-10 border-b border-border bg-muted/20 flex items-center shrink-0">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Execution Workspace</span>
                 </div>
                 
                 <div className="flex-1 min-h-0">
-                  <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"}>
+                  <ResizablePanelGroup direction="horizontal">
                     {/* Console Section */}
-                    <ResizablePanel defaultSize={33} minSize={isMobile ? 20 : 15} maxSize={80}>
+                    <ResizablePanel defaultSize={33} minSize={15} maxSize={60}>
                       <div className="h-full flex flex-col border-r border-border/40">
                         <div className="px-4 py-2 border-b border-border/40 bg-black/20 flex items-center gap-2">
                           <Terminal className="h-3 w-3 text-emerald-500" />
@@ -648,97 +720,5 @@ export default function WorkspacePage() {
         </div>
       </div>
     </div>
-  );
-}
-
-// Reusable components to avoid duplication
-function SidebarContent({ 
-  searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, 
-  filteredPrograms, selectedProgram, selectProgram 
-}: any) {
-  return (
-    <>
-      <div className="p-5 sm:p-6 border-b border-border/40 space-y-4 sm:space-y-6">
-        <div className="space-y-1.5">
-          <h2 className="text-[10px] font-black uppercase text-primary tracking-[0.2em]">Algorithm Library</h2>
-          <p className="text-[10px] text-white/40">Select a logic pattern to visualize</p>
-        </div>
-        
-        <div className="relative group">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/20 group-focus-within:text-primary transition-colors" />
-          <Input
-            placeholder="Filter logic..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-10 text-xs bg-white/5 border-white/5 rounded-xl focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-white/20"
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          {["All", ...CATEGORIES.map(c => c.name)].map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border",
-                selectedCategory === cat 
-                  ? "bg-primary border-primary text-primary-foreground" 
-                  : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10 hover:text-white"
-              )}
-            >
-              {cat.split(' ')[0]}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <ScrollArea className="flex-1">
-        <div className="p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-          {filteredPrograms.map((prog: any) => (
-            <button
-              key={prog.id}
-              onClick={() => selectProgram(prog)}
-              className={cn(
-                "w-full text-left rounded-xl p-3 sm:p-4 transition-all relative overflow-hidden group",
-                selectedProgram?.id === prog.id 
-                  ? "bg-primary/10 border border-primary/20" 
-                  : "hover:bg-white/[0.03] border border-transparent"
-              )}
-            >
-              {selectedProgram?.id === prog.id && (
-                <motion.div 
-                  layoutId="activeSide"
-                  className="absolute left-0 top-0 bottom-0 w-1 bg-primary"
-                />
-              )}
-              <div className="flex flex-col gap-1">
-                <div className={cn(
-                  "text-[10px] sm:text-[11px] font-black uppercase tracking-tight transition-colors",
-                  selectedProgram?.id === prog.id ? "text-primary" : "text-white/70 group-hover:text-white"
-                )}>
-                  {prog.name}
-                </div>
-                <div className="flex items-center justify-between mt-1">
-                  <span className={cn("text-[8px] font-black uppercase tracking-tighter opacity-60")}>
-                    {prog.category}
-                  </span>
-                  <Badge 
-                    variant="outline" 
-                    className={cn(
-                      "text-[8px] h-3.5 px-1.5 font-black uppercase border-none",
-                      prog.difficulty === "beginner" ? "bg-emerald-500/10 text-emerald-500" :
-                      prog.difficulty === "intermediate" ? "bg-amber-500/10 text-amber-500" :
-                      "bg-rose-500/10 text-rose-500"
-                    )}
-                  >
-                    {prog.difficulty}
-                  </Badge>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </ScrollArea>
-    </>
   );
 }

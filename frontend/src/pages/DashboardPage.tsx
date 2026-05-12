@@ -114,8 +114,8 @@ export default function DashboardPage() {
         {/* Upgrade Banner for Free Users */}
         {user?.planType !== "pro" && !isNewUser && (
           <Card className="mb-8 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/20 overflow-hidden group">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/20 group-hover:scale-110 transition-transform">
                   <Zap className="h-6 w-6 text-amber-500 fill-current" />
                 </div>
@@ -125,8 +125,8 @@ export default function DashboardPage() {
                     Get unlimited saved traces, public sharing, and advanced Java feature support.
                   </p>
                 </div>
-                <Link href="/pricing" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto gap-2 flex-shrink-0 bg-amber-500 hover:bg-amber-600 text-white border-none">
+                <Link href="/pricing">
+                  <Button className="gap-2 flex-shrink-0 bg-amber-500 hover:bg-amber-600 text-white border-none">
                     Unlock Pro Features
                     <Sparkles className="h-4 w-4" />
                   </Button>
