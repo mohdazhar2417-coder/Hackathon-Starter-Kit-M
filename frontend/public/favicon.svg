@@ -1,15 +1,17 @@
 <svg width="180" height="180" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100" height="100" rx="20" fill="#001F61"/>
-  {/* Infinity Symbol - Thicker and more prominent */}
+  <!-- White background as requested by the user for contrast -->
+  <rect width="100" height="100" rx="20" fill="white"/>
+  
+  <!-- Thick Navy Blue Infinity Symbol -->
   <path
-    d="M30 35C12 35 12 65 30 65C38 65 45 57 50 50C55 43 62 35 70 35C88 35 88 65 70 65C62 65 55 57 50 50"
-    stroke="white"
+    d="M30 32C12 32 12 68 30 68C38 68 45 58 50 50C55 42 62 32 70 32C88 32 88 68 70 68C62 68 55 58 50 50C45 42 38 32 30 32Z"
+    stroke="#001F61"
     strokeWidth="12"
     strokeLinecap="round"
     strokeLinejoin="round"
   />
-  {/* The Eye */}
+  
+  <!-- The Eye Integration -->
   <circle cx="28" cy="50" r="11" fill="#001F61" />
-  <circle cx="28" cy="50" r="10" fill="white" />
-  <circle cx="28" cy="50" r="4.5" fill="#001F61" />
+  <circle cx="28" cy="50" r="4.5" fill="white" />
 </svg>
