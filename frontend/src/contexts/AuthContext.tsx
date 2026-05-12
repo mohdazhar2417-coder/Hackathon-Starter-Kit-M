@@ -31,9 +31,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (storedToken) {
         setToken(storedToken);
         try {
-          // Verify with /api/auth/me directly since we are inside Provider and shouldn't use hooks here easily without QueryClient setup if it depends on it. 
-          // Actually, we can just let App useGetMe to restore user if token exists.
-          // For simplicity, we just set token. The App component can handle useGetMe.
+          const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${storedToken}` }
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+          } else {
+            throw new Error("Invalid token");
+          }
         } catch (err) {
           localStorage.removeItem(TOKEN_KEY);
           setToken(null);

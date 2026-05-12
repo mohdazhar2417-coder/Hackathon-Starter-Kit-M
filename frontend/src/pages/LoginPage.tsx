@@ -28,8 +28,8 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     if (token) {
-      // Set the token
-      login(token, null as any);
+      // Set the token and a placeholder user so we are "authenticated"
+      login(token, { id: "pending", name: "User", email: "", role: "student" } as any);
       toast({ title: "Welcome!", description: "Signed in with Google successfully." });
       
       // Clean the URL (remove the token) and jump to dashboard
