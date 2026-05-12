@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Code2, Home, ArrowLeft } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function NotFound() {
@@ -13,10 +14,7 @@ export default function NotFound() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
-      {/* Brand mark */}
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 ring-2 ring-primary/20 mb-6">
-        <Code2 className="h-7 w-7 text-primary" />
-      </div>
+      <Logo showText={false} iconSize={48} className="mb-6" />
 
       {/* 404 */}
       <p className="text-8xl font-black text-primary/20 font-mono leading-none mb-2 select-none">404</p>

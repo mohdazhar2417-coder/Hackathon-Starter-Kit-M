@@ -7,6 +7,7 @@ import {
   Code2, GitBranch, BarChart3, BookOpen, Zap, ChevronRight,
   Play, Terminal, ArrowRight, Check, Users, Star,
 } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 const STEPS = [
   {
@@ -464,15 +465,7 @@ export default function LandingPage() {
       <footer className="border-t border-border py-10 bg-card/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 ring-1 ring-primary/30">
-                <Code2 className="h-3.5 w-3.5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-bold leading-none">LogicLens</p>
-                <p className="text-[10px] text-muted-foreground">TraceWise AI</p>
-              </div>
-            </div>
+            <Logo iconSize={28} />
             <div className="flex items-center gap-6 text-xs text-muted-foreground">
               <Link href="/login"><span className="hover:text-foreground transition-colors cursor-pointer">Sign In</span></Link>
               <Link href="/signup"><span className="hover:text-foreground transition-colors cursor-pointer">Get Started</span></Link>

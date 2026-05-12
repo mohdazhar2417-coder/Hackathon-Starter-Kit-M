@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Code2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { Logo } from "@/components/Logo";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -60,15 +61,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-background flex">
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-card border-r border-border">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/30">
-            <Code2 className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-bold">LogicLens</p>
-            <p className="text-xs text-muted-foreground">TraceWise AI</p>
-          </div>
-        </div>
+        <Logo iconSize={36} />
 
         <div className="space-y-6">
           <h2 className="text-2xl font-bold">Start understanding your code today</h2>

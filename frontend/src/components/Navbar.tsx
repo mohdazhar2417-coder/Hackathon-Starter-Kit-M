@@ -14,6 +14,7 @@ import {
   ChevronDown, Code2, LogOut, LayoutDashboard,
   BookMarked, Heart, Shield, Menu, X, Play,
 } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -36,15 +37,7 @@ export function Navbar() {
         <div className="flex h-14 items-center justify-between">
           {/* Logo */}
           <Link href={isAuthenticated ? "/dashboard" : "/"}>
-            <div className="flex items-center gap-2.5 cursor-pointer group" data-testid="nav-logo">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/30 group-hover:bg-primary/20 transition-colors">
-                <Code2 className="h-4 w-4 text-primary" />
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-sm font-bold tracking-tight text-foreground">LogicLens</span>
-                <span className="text-[10px] text-muted-foreground font-medium">TraceWise AI</span>
-              </div>
-            </div>
+            <Logo iconSize={32} />
           </Link>
 
           {/* Desktop nav links */}
@@ -125,13 +118,7 @@ export function Navbar() {
                   <SheetContent side="right" className="w-72 bg-card border-border p-0">
                     <SheetHeader className="px-5 py-4 border-b border-border">
                       <SheetTitle className="flex items-center gap-2.5 text-left">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/30">
-                          <Code2 className="h-3.5 w-3.5 text-primary" />
-                        </div>
-                        <div className="leading-none">
-                          <p className="text-sm font-bold">LogicLens</p>
-                          <p className="text-[10px] text-muted-foreground font-normal">TraceWise AI</p>
-                        </div>
+                        <Logo iconSize={28} />
                       </SheetTitle>
                     </SheetHeader>
                     {/* User info */}
