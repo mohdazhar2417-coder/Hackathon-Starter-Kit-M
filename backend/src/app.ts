@@ -43,4 +43,10 @@ app.use(passport.initialize());
 app.use("/api/auth", authRouter);
 app.use("/api", router);
 
+// NUCLEAR FIX: Direct top-level route to ensure Google Callback is ALWAYS caught
+app.get("/api/auth/google/callback", (req, res, next) => {
+  logger.info("Nuclear Route: Google Callback Hit");
+  authRouter(req, res, next);
+});
+
 export default app;
