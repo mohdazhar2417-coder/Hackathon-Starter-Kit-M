@@ -27,27 +27,18 @@ export function Logo({
           xmlns="http://www.w3.org/2000/svg"
           className="w-full h-full"
         >
-          {/* Main Infinity Path */}
-          <path
-            d="M30.5 15C42.5 15 52.5 30 69.5 30C86.5 30 86.5 45 69.5 45C52.5 45 42.5 30 30.5 30C18.5 30 18.5 15 30.5 15Z"
-            stroke={iconColor}
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="opacity-20"
-          />
-          {/* Top Stroke */}
+          {/* Main Infinity Path - Thicker for better visibility */}
           <path
             d="M30 15C12 15 12 45 30 45C38 45 45 37 50 30C55 23 62 15 70 15C88 15 88 45 70 45C62 45 55 37 50 30"
             stroke={iconColor}
-            strokeWidth="10"
+            strokeWidth="11"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
           {/* The Eye Integration */}
-          <circle cx="28" cy="30" r="9" fill={iconColor} />
-          <circle cx="28" cy="30" r="3.5" fill="white" />
-          <path d="M22 25C24 23 28 23 30 25" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+          <circle cx="28" cy="30" r="10" fill={iconColor} />
+          <circle cx="28" cy="30" r="9" fill="white" />
+          <circle cx="28" cy="30" r="4" fill={iconColor} />
         </svg>
       </div>
       
