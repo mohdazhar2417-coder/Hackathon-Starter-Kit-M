@@ -15,6 +15,7 @@ import FavoritesPage from "@/pages/FavoritesPage";
 import AdminPage from "@/pages/AdminPage";
 import PricingPage from "@/pages/PricingPage";
 import { useEffect } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -182,6 +183,7 @@ export default function App() {
           </AuthProvider>
         </WouterRouter>
       </TooltipProvider>
+      <SpeedInsights />
     </QueryClientProvider>
   );
 }
