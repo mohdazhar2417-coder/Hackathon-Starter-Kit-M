@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWorkspaceStore } from "@/hooks/useWorkspaceStore";
 import { cn } from "@/lib/utils";
 import { Box, Layers, Database } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const MemoryVisualizer: React.FC = () => {
   const { simResult, activeStep } = useWorkspaceStore();
@@ -31,13 +32,22 @@ export const MemoryVisualizer: React.FC = () => {
               </div>
             ) : (
               varEntries.map(([name, value]) => (
-                <div 
+                <motion.div 
                   key={name}
+                  layout
+                  initial={false}
+                  animate={changedVars.has(name) ? {
+                    scale: [1, 1.05, 1],
+                    backgroundColor: ["hsla(var(--primary), 0)", "hsla(var(--primary), 0.15)", "hsla(var(--primary), 0.05)"],
+                    borderColor: ["hsla(var(--border), 1)", "hsla(var(--primary), 0.5)", "hsla(var(--primary), 0.2)"],
+                  } : {
+                    scale: 1,
+                    backgroundColor: "hsla(var(--muted), 0.3)",
+                    borderColor: "hsla(var(--border), 1)",
+                  }}
+                  transition={{ duration: 0.5 }}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-lg border transition-all duration-500",
-                    changedVars.has(name) 
-                      ? "bg-primary/10 border-primary/30 ring-1 ring-primary/20 scale-[1.02] shadow-sm" 
-                      : "bg-muted/30 border-border"
+                    "flex items-center justify-between p-3 rounded-lg border transition-all shadow-sm"
                   )}
                 >
                   <div className="flex flex-col">
@@ -46,14 +56,19 @@ export const MemoryVisualizer: React.FC = () => {
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter mb-0.5">Value</span>
-                    <span className={cn(
-                      "font-mono text-sm font-black",
-                      typeof value === 'number' ? "text-blue-500" : "text-emerald-500"
-                    )}>
+                    <motion.span 
+                      key={String(value)}
+                      initial={{ y: -10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className={cn(
+                        "font-mono text-sm font-black",
+                        typeof value === 'number' ? "text-blue-500" : "text-emerald-500"
+                      )}
+                    >
                       {typeof value === 'string' ? `"${value}"` : String(value)}
-                    </span>
+                    </motion.span>
                   </div>
-                </div>
+                </motion.div>
               ))
             )}
           </div>

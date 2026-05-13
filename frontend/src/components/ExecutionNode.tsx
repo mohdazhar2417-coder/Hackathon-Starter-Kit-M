@@ -100,12 +100,24 @@ export const ExecutionNode = memo(({ data, selected }: NodeProps) => {
         {active && (
           <>
             <motion.div 
-              layoutId="nodeGlow"
-              className={cn("absolute inset-[-10px] rounded-[2.5rem] -z-10 blur-2xl opacity-40", theme.bg.replace("bg-", "bg-"))}
-              style={{ backgroundColor: "hsl(var(--primary))" }}
-              transition={{ type: "spring", bounce: 0.2, duration: 1 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ 
+                opacity: [0.2, 0.4, 0.2],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{ 
+                repeat: Infinity, 
+                duration: 2,
+                ease: "easeInOut" 
+              }}
+              className={cn("absolute inset-[-15px] rounded-[2.5rem] -z-10 blur-2xl opacity-40")}
+              style={{ backgroundColor: "hsla(var(--primary), 0.4)" }}
             />
-            <div className="absolute inset-0 rounded-[2.5rem] border border-primary/50 animate-pulse pointer-events-none" />
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 rounded-[2.5rem] border-2 border-primary shadow-[0_0_15px_rgba(var(--primary),0.5)] pointer-events-none" 
+            />
           </>
         )}
       </div>
