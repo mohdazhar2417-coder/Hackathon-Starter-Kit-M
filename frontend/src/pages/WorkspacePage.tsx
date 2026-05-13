@@ -536,7 +536,7 @@ export default function WorkspacePage() {
                     )}
                     <div className="flex flex-col gap-1">
                       <div className={cn(
-                        "text-[11px] font-black uppercase tracking-tight transition-colors",
+                        "text-[13px] font-black uppercase tracking-tight transition-colors",
                         selectedProgram?.id === prog.id ? "text-primary" : "text-white/70 group-hover:text-white"
                       )}>
                         {prog.name}

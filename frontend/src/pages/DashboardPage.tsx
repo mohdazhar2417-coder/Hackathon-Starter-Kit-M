@@ -282,7 +282,7 @@ export default function DashboardPage() {
                     {cat.programs.slice(0, 6).map((prog) => (
                       <Link key={prog.id} href={`/workspace?program=${prog.id}`}>
                         <button
-                          className="inline-flex items-center rounded-md border border-border bg-background px-3 py-1 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all"
+                          className="inline-flex items-center rounded-md border border-border bg-background px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all"
                           data-testid={`cat-program-${prog.id}`}
                         >
                           {prog.name}
