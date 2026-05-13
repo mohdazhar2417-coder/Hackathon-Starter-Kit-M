@@ -83,6 +83,8 @@ export default function WorkspacePage() {
   const [showEditor, setShowEditor] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(true);
+  const [sidebarPinned, setSidebarPinned] = useState(false);
 
   const filteredPrograms = useMemo(() => {
     return SAMPLE_PROGRAMS.filter((p) => {
@@ -206,13 +208,18 @@ export default function WorkspacePage() {
       });
       const result = simulate(selectedProgram.code, inputs);
       setSimResult(result);
+      if (sidebarPinned) {
+        setShowSidebar(true);
+      } else {
+        setShowSidebar(false);
+      }
       toast({ title: "Analysis Complete", description: "Flowchart generated successfully." });
     } catch (err) {
       toast({ title: "Simulation error", description: String(err), variant: "destructive" });
     } finally {
       setIsRunning(false);
     }
-  }, [selectedProgram, customInputs, setSimResult, setIsRunning, setAutoPlay, toast]);
+  }, [selectedProgram, customInputs, setSimResult, setIsRunning, setAutoPlay, toast, sidebarPinned]);
 
   const selectProgram = (prog: any) => {
     setSelectedProgram(prog);
@@ -358,6 +365,36 @@ export default function WorkspacePage() {
 
           <div className="h-6 w-px bg-border/30 mx-1 shrink-0" />
 
+          {/* Panel Toggles */}
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("h-9 w-9 p-0 rounded-xl transition-all", sidebarPinned && "text-primary bg-primary/10")}
+              onClick={() => {
+                const nextPinned = !sidebarPinned;
+                setSidebarPinned(nextPinned);
+                if (nextPinned) setShowSidebar(true);
+              }}
+              title={sidebarPinned ? "Unpin Sidebar" : "Pin Sidebar"}
+            >
+              <Orbit className={cn("h-3.5 w-3.5", sidebarPinned && "fill-current")} />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("h-9 w-9 p-0 rounded-xl transition-all", !showRightPanel && "text-primary bg-primary/10")}
+              onClick={() => setShowRightPanel(!showRightPanel)}
+              title="Toggle Right Panel"
+            >
+              <Table className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
+          <div className="h-6 w-px bg-border/30 mx-1 shrink-0" />
+
+          {/* Save/Favorite Controls */}
           {!isMobile && (
             <Button 
               size="sm" 
@@ -659,63 +696,68 @@ export default function WorkspacePage() {
             <ResizableHandle withHandle />
 
             {/* Partitioned Lower Panel */}
-            <ResizablePanel defaultSize={25} minSize={20}>
-              <div className="h-full bg-card border-t border-border flex flex-col">
-                <div className="px-6 h-10 border-b border-border bg-muted/20 flex items-center shrink-0">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Execution Workspace</span>
+            {showRightPanel && (
+              <ResizablePanel defaultSize={25} minSize={20}>
+                <div className="h-full bg-card border-l border-border flex flex-col">
+                  <div className="px-6 h-10 border-b border-border bg-muted/20 flex items-center justify-between shrink-0">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Execution Workspace</span>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-white/5" onClick={() => setShowRightPanel(false)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  
+                  <div className="flex-1 min-h-0">
+                    <ResizablePanelGroup direction="horizontal">
+                      {/* Console Section */}
+                      <ResizablePanel defaultSize={33} minSize={15} maxSize={60}>
+                        <div className="h-full flex flex-col border-r border-border/40">
+                          <div className="px-4 py-2 border-b border-border/40 bg-black/20 flex items-center gap-2">
+                            <Terminal className="h-3 w-3 text-emerald-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500/80">Console</span>
+                          </div>
+                          <div className="flex-1 p-4 bg-black/5 overflow-auto custom-scrollbar">
+                            <pre className="font-mono text-[11px] leading-relaxed text-emerald-500/90 whitespace-pre-wrap">
+                              {currentStep?.accumulatedOutput || "(Output will appear here...)"}
+                              <span className="inline-block w-1.5 h-3 bg-emerald-500/50 animate-pulse ml-1" />
+                            </pre>
+                          </div>
+                        </div>
+                      </ResizablePanel>
+
+                      <ResizableHandle withHandle />
+
+                      {/* Iteration Table Section */}
+                      <ResizablePanel defaultSize={34} minSize={20} maxSize={70}>
+                        <div className="h-full flex flex-col border-r border-border/40">
+                          <div className="px-4 py-2 border-b border-border/40 bg-black/20 flex items-center gap-2">
+                            <Table className="h-3 w-3 text-primary" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-primary/80">Iteration Table</span>
+                          </div>
+                          <div className="flex-1 min-h-0">
+                            <LoopTraceTable />
+                          </div>
+                        </div>
+                      </ResizablePanel>
+
+                      <ResizableHandle withHandle />
+
+                      {/* Memory Section */}
+                      <ResizablePanel defaultSize={33} minSize={15} maxSize={60}>
+                        <div className="h-full flex flex-col">
+                          <div className="px-4 py-2 border-b border-border/40 bg-black/20 flex items-center gap-2">
+                            <Database className="h-3 w-3 text-amber-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-amber-500/80">Full Memory</span>
+                          </div>
+                          <div className="flex-1 min-h-0">
+                            <MemoryVisualizer />
+                          </div>
+                        </div>
+                      </ResizablePanel>
+                    </ResizablePanelGroup>
+                  </div>
                 </div>
-                
-                <div className="flex-1 min-h-0">
-                  <ResizablePanelGroup direction="horizontal">
-                    {/* Console Section */}
-                    <ResizablePanel defaultSize={33} minSize={15} maxSize={60}>
-                      <div className="h-full flex flex-col border-r border-border/40">
-                        <div className="px-4 py-2 border-b border-border/40 bg-black/20 flex items-center gap-2">
-                          <Terminal className="h-3 w-3 text-emerald-500" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500/80">Console</span>
-                        </div>
-                        <div className="flex-1 p-4 bg-black/5 overflow-auto custom-scrollbar">
-                          <pre className="font-mono text-[11px] leading-relaxed text-emerald-500/90 whitespace-pre-wrap">
-                            {currentStep?.accumulatedOutput || "(Output will appear here...)"}
-                            <span className="inline-block w-1.5 h-3 bg-emerald-500/50 animate-pulse ml-1" />
-                          </pre>
-                        </div>
-                      </div>
-                    </ResizablePanel>
-
-                    <ResizableHandle withHandle />
-
-                    {/* Iteration Table Section */}
-                    <ResizablePanel defaultSize={34} minSize={20} maxSize={70}>
-                      <div className="h-full flex flex-col border-r border-border/40">
-                        <div className="px-4 py-2 border-b border-border/40 bg-black/20 flex items-center gap-2">
-                          <Table className="h-3 w-3 text-primary" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-primary/80">Iteration Table</span>
-                        </div>
-                        <div className="flex-1 min-h-0">
-                          <LoopTraceTable />
-                        </div>
-                      </div>
-                    </ResizablePanel>
-
-                    <ResizableHandle withHandle />
-
-                    {/* Memory Section */}
-                    <ResizablePanel defaultSize={33} minSize={15} maxSize={60}>
-                      <div className="h-full flex flex-col">
-                        <div className="px-4 py-2 border-b border-border/40 bg-black/20 flex items-center gap-2">
-                          <Database className="h-3 w-3 text-amber-500" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-amber-500/80">Full Memory</span>
-                        </div>
-                        <div className="flex-1 min-h-0">
-                          <MemoryVisualizer />
-                        </div>
-                      </div>
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </div>
-              </div>
-            </ResizablePanel>
+              </ResizablePanel>
+            )}
           </ResizablePanelGroup>
         </div>
       </div>
