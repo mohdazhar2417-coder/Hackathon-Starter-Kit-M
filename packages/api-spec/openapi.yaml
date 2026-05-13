@@ -489,6 +489,15 @@ components:
           type: string
         role:
           type: string
+        stripeCustomerId:
+          type: string
+          nullable: true
+        subscriptionStatus:
+          type: string
+          nullable: true
+        planType:
+          type: string
+          nullable: true
         createdAt:
           type: string
       required:
@@ -497,6 +506,7 @@ components:
         - email
         - role
         - createdAt
+        - planType
 
     AuthResponse:
       type: object

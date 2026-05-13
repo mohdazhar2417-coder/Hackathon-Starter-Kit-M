@@ -18,12 +18,12 @@ export interface SuccessResponse {
   message?: string;
 }
 
-export type SignupBodyRole =
-  (typeof SignupBodyRole)[keyof typeof SignupBodyRole];
+export type SignupBodyRole = typeof SignupBodyRole[keyof typeof SignupBodyRole];
+
 
 export const SignupBodyRole = {
-  student: "student",
-  admin: "admin",
+  student: 'student',
+  admin: 'admin',
 } as const;
 
 export interface SignupBody {
@@ -43,6 +43,9 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  stripeCustomerId?: string | null;
+  subscriptionStatus?: string | null;
+  planType: string | null;
   createdAt: string;
 }
 
@@ -150,6 +153,7 @@ export interface AdminStats {
 }
 
 export type GetProgramsParams = {
-  category?: string;
-  difficulty?: string;
+category?: string;
+difficulty?: string;
 };
+
