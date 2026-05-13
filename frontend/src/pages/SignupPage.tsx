@@ -25,10 +25,11 @@ type SignupForm = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
   const { login } = useAuth();
-  useEffect(() => { document.title = "Create Account · LogicLens"; }, []);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => { document.title = "Create Account · LogicLens"; }, []);
 
   const signupMutation = useSignup();
 

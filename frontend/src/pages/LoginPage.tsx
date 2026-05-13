@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Code2, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { Eye, EyeOff, Code2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 const loginSchema = z.object({
@@ -22,7 +21,14 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const { login } = useAuth();
-  useEffect(() => { document.title = "Sign In · LogicLens"; }, []);
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const loginMutation = useLogin();
+
+  useEffect(() => {
+    document.title = "Sign In · LogicLens";
+  }, []);
   
   useEffect(() => {
     // Check for token in URL (from Google OAuth callback)
@@ -30,7 +36,7 @@ export default function LoginPage() {
     const token = params.get("token");
     if (token) {
       // Set the token and a placeholder user so we are "authenticated"
-      login(token, { id: "pending", name: "User", email: "", role: "student" } as any);
+      login(token, { id: 0, name: "User", email: "", role: "student" } as any);
       toast({ title: "Welcome!", description: "Signed in with Google successfully." });
       
       // Clean the URL (remove the token) and jump to dashboard
@@ -38,12 +44,6 @@ export default function LoginPage() {
       setTimeout(() => setLocation("/dashboard"), 100);
     }
   }, [login, setLocation, toast]);
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [showPassword, setShowPassword] = useState(false);
-  const { me } = useAuth(); // Assuming there's a me function to fetch user after token set
-
-  const loginMutation = useLogin();
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -59,7 +59,7 @@ export default function LoginPage() {
           toast({ title: "Welcome back!", description: `Signed in as ${response.user.name}` });
           setLocation("/dashboard");
         },
-        onError: () => {
+        onError: (error) => {
           toast({
             title: "Sign in failed",
             description: "Invalid email or password. Please try again.",
@@ -72,58 +72,67 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-card border-r border-border">
+      {/* Left panel - Decorative */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-card border-r border-border relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
         <Logo iconSize={36} />
-        <div>
-          <blockquote className="text-xl font-medium text-foreground leading-relaxed mb-4">
-            "I finally understood why my loop wasn't stopping — LogicLens showed me exactly which condition was false at each step."
+        
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-6">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            Step into the logic
+          </div>
+          <blockquote className="text-3xl font-bold text-foreground leading-tight mb-6">
+            "I finally understood why my loop wasn't stopping — <span className="text-primary italic">LogicLens</span> showed me exactly which condition was false at each step."
           </blockquote>
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">S</div>
+            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">SK</div>
             <div>
-              <p className="text-sm font-medium">Sarah K.</p>
-              <p className="text-xs text-muted-foreground">CS101 Student</p>
+              <p className="text-sm font-semibold">Sarah K.</p>
+              <p className="text-xs text-muted-foreground">CS101 Student @ State Uni</p>
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+
+        <div className="relative z-10 grid grid-cols-3 gap-4">
           {[
             { label: "Programs", value: "30+" },
             { label: "Categories", value: "5" },
             { label: "Steps/Trace", value: "100+" },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-lg border border-border bg-background/50 p-3 text-center">
-              <p className="text-xl font-bold text-primary">{stat.value}</p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
+            <div key={stat.label} className="rounded-xl border border-border bg-background/50 backdrop-blur-sm p-4 text-center">
+              <p className="text-2xl font-bold text-primary">{stat.value}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{stat.label}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Right panel */}
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
-        <div className="w-full max-w-sm">
-          <div className="mb-8 text-center lg:text-left">
-            <h1 className="text-2xl font-bold mb-1">Welcome back</h1>
-            <p className="text-sm text-muted-foreground">Sign in to your LogicLens account</p>
+      {/* Right panel - Form */}
+      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 lg:px-12 bg-background">
+        <div className="w-full max-w-sm space-y-8">
+          <div className="text-center lg:text-left">
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back</h1>
+            <p className="text-muted-foreground">Sign in to your LogicLens account to continue tracing.</p>
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" data-testid="login-form">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel>Email address</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="email"
                         placeholder="you@example.com"
-                        data-testid="input-email"
-                        className="bg-card"
+                        className="bg-card h-11 transition-all focus:ring-2 focus:ring-primary/20"
                       />
                     </FormControl>
                     <FormMessage />
@@ -134,21 +143,25 @@ export default function LoginPage() {
                 control={form.control}
                 name="password"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
+                  <FormItem className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Password</FormLabel>
+                      <Link href="/forgot-password">
+                        <span className="text-xs text-primary hover:underline cursor-pointer">Forgot?</span>
+                      </Link>
+                    </div>
                     <FormControl>
                       <div className="relative">
                         <Input
                           {...field}
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          data-testid="input-password"
-                          className="bg-card pr-10"
+                          className="bg-card h-11 pr-11 transition-all focus:ring-2 focus:ring-primary/20"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
@@ -161,30 +174,36 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full h-11 font-semibold text-base shadow-lg shadow-primary/20"
                 disabled={loginMutation.isPending}
-                data-testid="button-submit"
               >
-                {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                {loginMutation.isPending ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Signing in...</span>
+                  </div>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
           </Form>
 
-          <div className="relative my-6">
+          <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-background px-4 text-muted-foreground font-medium">Or continue with</span>
             </div>
           </div>
 
           <Button
             variant="outline"
-            className="w-full bg-card gap-2"
+            className="w-full h-11 bg-card hover:bg-muted/50 gap-3 border-border"
             onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/auth/google`}
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24">
+            <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -202,19 +221,13 @@ export default function LoginPage() {
                 fill="#EA4335"
               />
             </svg>
-            Google
+            <span className="font-medium">Sign in with Google</span>
           </Button>
 
-          <div className="mt-4 p-3 rounded-md bg-muted/30 border border-border">
-            <p className="text-xs text-muted-foreground text-center mb-1">Demo credentials</p>
-            <p className="text-xs font-mono text-center text-foreground">student@logiclens.dev / student123</p>
-            <p className="text-xs font-mono text-center text-foreground">admin@logiclens.dev / admin123</p>
-          </div>
-
-          <p className="mt-6 text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground pt-4">
             Don't have an account?{" "}
             <Link href="/signup">
-              <span className="text-primary font-medium hover:underline cursor-pointer" data-testid="link-signup">Create one</span>
+              <span className="text-primary font-bold hover:underline cursor-pointer decoration-2 underline-offset-4">Create your free account</span>
             </Link>
           </p>
         </div>
