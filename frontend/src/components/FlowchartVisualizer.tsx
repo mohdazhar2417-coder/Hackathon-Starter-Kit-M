@@ -45,48 +45,60 @@ const FlowchartInner = () => {
   const [speed, setSpeed] = useState(1); // speed factor (1x default)
   const currentStep = simResult?.steps[activeStep];
 
-  // Advanced Layout Engine (Simple Tiered Implementation)
+  // Advanced Branch-Aware Layout Engine
   const { layoutNodes, layoutEdges } = useMemo(() => {
     if (!simResult?.graph) return { layoutNodes: [], layoutEdges: [] };
     
     const nodes = simResult.graph.nodes;
     const edges = simResult.graph.edges;
 
-    // Build adjacency list for layout
     const adj: Record<string, string[]> = {};
     edges.forEach(e => {
       if (!adj[e.source]) adj[e.source] = [];
       adj[e.source].push(e.target);
     });
 
-    // BFS/Tiered layout
     const positioned: Record<string, { x: number, y: number }> = {};
-    const levels: Record<string, number> = {};
-    const queue: [string, number][] = [["start", 0]];
-    const levelCounts: Record<number, number> = {};
+    const levelOccupancy: Record<number, number> = {}; // level -> rightmost X
 
-    while (queue.length > 0) {
-      const [id, level] = queue.shift()!;
-      if (levels[id] !== undefined) continue;
+    // Recursive layout that handles branching
+    const positionNode = (nodeId: string, level: number, preferredX: number) => {
+      if (positioned[nodeId]) return;
+
+      const currentLevelRight = levelOccupancy[level] || 0;
+      const x = Math.max(preferredX, currentLevelRight);
       
-      levels[id] = level;
-      levelCounts[level] = (levelCounts[level] || 0) + 1;
-      
-      const horizontalOffset = (levelCounts[level] - 1) * 400; // further increased horizontal spacing
-      positioned[id] = {
-        x: horizontalOffset - ((levelCounts[level] - 1) * 400) / 2,
-        y: level * 260 // further increased vertical spacing
-      };
+      positioned[nodeId] = { x, y: level * 300 }; // Increased vertical spacing
+      levelOccupancy[level] = x + 450; // Increased horizontal spacing buffer
 
+      const children = adj[nodeId] || [];
+      if (children.length === 1) {
+        positionNode(children[0], level + 1, x);
+      } else if (children.length > 1) {
+        // Spread children out
+        const totalWidth = (children.length - 1) * 450;
+        const startX = x - totalWidth / 2;
+        children.forEach((childId, i) => {
+          positionNode(childId, level + 1, startX + i * 450);
+        });
+      }
+    };
 
-      (adj[id] || []).forEach(nextId => {
-        queue.push([nextId, level + 1]);
-      });
-    }
+    positionNode("start", 0, 0);
+
+    // Fallback for disconnected nodes
+    nodes.forEach(n => {
+      if (!positioned[n.id]) {
+        const fallbackLevel = 0;
+        const fallbackX = (levelOccupancy[fallbackLevel] || 0);
+        positioned[n.id] = { x: fallbackX, y: 0 };
+        levelOccupancy[fallbackLevel] = fallbackX + 450;
+      }
+    });
 
     const flowNodes = nodes.map(node => ({
       ...node,
-      position: positioned[node.id] || { x: 0, y: 0 },
+      position: positioned[node.id],
       data: { 
         ...node,
         active: false,
