@@ -197,8 +197,8 @@ const FlowchartInner = () => {
     if (isAutoFollowing) {
       const activeNode = layoutNodes.find(n => n.id === currentStep.nodeId);
       if (activeNode) {
-        const baseDuration = 1000;
-        const adjusted = baseDuration / speed; // faster speed = shorter duration
+        const baseDuration = 800; // Snappier than the step interval to avoid overlap lag
+        const adjusted = baseDuration / speed; 
         setCenter(activeNode.position.x + 110, activeNode.position.y + 60, { zoom: 1.1, duration: adjusted });
       }
     }

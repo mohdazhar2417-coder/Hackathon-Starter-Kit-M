@@ -26,7 +26,7 @@ export const ExecutionNode = memo(({ data, selected }: NodeProps) => {
     )}>
       {/* Node Container */}
       <div className={cn(
-        "relative px-5 py-4 rounded-2xl border-2 transition-all duration-700 min-w-[220px] max-w-[300px]",
+        "relative px-5 py-4 rounded-2xl border-2 transition-all duration-300 min-w-[220px] max-w-[300px]",
         "backdrop-blur-xl shadow-2xl",
         active 
           ? "bg-card border-primary ring-8 ring-primary/10 scale-110 -translate-y-2" 

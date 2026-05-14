@@ -166,7 +166,7 @@ export default function WorkspacePage() {
         } else {
           nextStep();
         }
-      }, 1000); // Slower for flowchart animation
+      }, 1400); // Slightly slower for a calmer flowchart experience
     }
     return () => clearInterval(interval);
   }, [autoPlay, simResult, activeStep, nextStep]);
