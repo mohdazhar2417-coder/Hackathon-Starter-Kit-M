@@ -545,7 +545,11 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
       while (remaining.startsWith("else if") || remaining.startsWith("else if")) {
         const eiMatch = remaining.match(/^else\s+if\s*\(([\s\S]*?)\)\s*\{([\s\S]*?)\}([\s\S]*)$/);
         if (!eiMatch) break;
-        elseIfs.push({ condition: eiMatch[1], body: parseBody(eiMatch[2], lineNum) }); // simplified line for else-if
+        elseIfs.push({ 
+          condition: eiMatch[1], 
+          body: parseBody(eiMatch[2], lineNum),
+          raw: `else if (${eiMatch[1]})` 
+        }); 
         remaining = eiMatch[3].trim();
       }
       const elseMatch = remaining.match(/^else\s*\{([\s\S]*)\}$/);
@@ -679,7 +683,7 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
           "condition",
           "Condition Check",
           `Checking if (${stmt.condition}) is ${result ? "True" : "False"}`,
-          `if (${stmt.condition})`,
+          stmt.raw,
           variables,
           variables,
           "",
@@ -702,7 +706,7 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
               "condition",
               "Else-If Check",
               `Checking else if (${ei.condition}) is ${eiResult ? "True" : "False"}`,
-              `else if (${ei.condition})`,
+              (ei as any).raw || `else if (${ei.condition})`,
               variables,
               variables,
               "",
