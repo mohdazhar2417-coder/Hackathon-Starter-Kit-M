@@ -214,13 +214,38 @@ export async function updateUser(
     return cloneUser(memoryUsers[index]);
   }
 
-  const { db, usersTable } = await loadDbModule();
   const [user] = await db
     .update(usersTable)
     .set(input)
     .where(eq(usersTable.id, id))
     .returning();
   return user ? cloneUser(user) : null;
+}
+
+export async function listUsers(): Promise<UserRecord[]> {
+  if (useMemoryStore) {
+    return memoryUsers.map(cloneUser);
+  }
+
+  const { db, usersTable } = await loadDbModule();
+  const users = await db.select().from(usersTable);
+  return users.map(cloneUser);
+}
+
+export async function deleteUser(id: number): Promise<UserRecord | null> {
+  if (useMemoryStore) {
+    const index = memoryUsers.findIndex((candidate) => candidate.id === id);
+    if (index === -1) return null;
+    const [deleted] = memoryUsers.splice(index, 1);
+    return cloneUser(deleted);
+  }
+
+  const { db, usersTable } = await loadDbModule();
+  const [deleted] = await db
+    .delete(usersTable)
+    .where(eq(usersTable.id, id))
+    .returning();
+  return deleted ? cloneUser(deleted) : null;
 }
 
 export const getUserById = findUserById;
@@ -554,4 +579,70 @@ export async function getAdminStats(): Promise<AdminStats> {
       description: CATEGORY_DESCRIPTIONS[category] ?? "",
     })),
   };
+}
+
+export async function getAdminAnalytics(): Promise<{
+  registrations: { date: string; count: number }[];
+  traceActivity: { date: string; count: number }[];
+}> {
+  // Aggregate by date
+  const now = new Date();
+  const last30Days = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(now.getDate() - (29 - i));
+    return d.toISOString().split("T")[0];
+  });
+
+  const getCountByDate = (items: { createdAt?: Date; savedAt?: Date }[]) => {
+    const counts: Record<string, number> = {};
+    for (const item of items) {
+      const date = (item.createdAt || item.savedAt || new Date()).toISOString().split("T")[0];
+      counts[date] = (counts[date] ?? 0) + 1;
+    }
+    return last30Days.map(date => ({ date, count: counts[date] ?? 0 }));
+  };
+
+  if (useMemoryStore) {
+    return {
+      registrations: getCountByDate(memoryUsers),
+      traceActivity: getCountByDate(memoryTraces),
+    };
+  }
+
+  const { db, usersTable, savedTracesTable } = await loadDbModule();
+  const users = await db.select({ createdAt: usersTable.createdAt }).from(usersTable);
+  const traces = await db.select({ savedAt: savedTracesTable.savedAt }).from(savedTracesTable);
+
+  return {
+    registrations: getCountByDate(users),
+    traceActivity: getCountByDate(traces),
+  };
+}
+
+export async function getGlobalActivity(): Promise<any[]> {
+  if (useMemoryStore) {
+    return memoryTraces
+      .sort((a, b) => b.savedAt.getTime() - a.savedAt.getTime())
+      .slice(0, 50)
+      .map(t => {
+        const user = memoryUsers.find(u => u.id === t.userId);
+        return { ...t, userName: user?.name || "Unknown" };
+      });
+  }
+
+  const { db, savedTracesTable, usersTable } = await loadDbModule();
+  const activity = await db
+    .select({
+      id: savedTracesTable.id,
+      title: savedTracesTable.title,
+      category: savedTracesTable.category,
+      savedAt: savedTracesTable.savedAt,
+      userName: usersTable.name,
+    })
+    .from(savedTracesTable)
+    .leftJoin(usersTable, eq(savedTracesTable.userId, usersTable.id))
+    .orderBy(desc(savedTracesTable.savedAt))
+    .limit(50);
+
+  return activity;
 }

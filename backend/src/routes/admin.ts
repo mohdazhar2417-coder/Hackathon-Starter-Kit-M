@@ -67,4 +67,48 @@ router.get("/stats", async (req, res): Promise<void> => {
   res.json(stats);
 });
 
+router.get("/users", async (req, res): Promise<void> => {
+  const { listUsers } = await import("../lib/store.js");
+  const users = await listUsers();
+  res.json(users.map(u => {
+    const { passwordHash, ...rest } = u;
+    return rest;
+  }));
+});
+
+router.put("/users/:id", async (req, res): Promise<void> => {
+  const { updateUser } = await import("../lib/store.js");
+  const id = parseInt(req.params.id);
+  const user = await updateUser(id, req.body);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  const { passwordHash, ...rest } = user;
+  res.json(rest);
+});
+
+router.delete("/users/:id", async (req, res): Promise<void> => {
+  const { deleteUser } = await import("../lib/store.js");
+  const id = parseInt(req.params.id);
+  const deleted = await deleteUser(id);
+  if (!deleted) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.json({ success: true });
+});
+
+router.get("/analytics", async (req, res): Promise<void> => {
+  const { getAdminAnalytics } = await import("../lib/store.js");
+  const analytics = await getAdminAnalytics();
+  res.json(analytics);
+});
+
+router.get("/activity", async (req, res): Promise<void> => {
+  const { getGlobalActivity } = await import("../lib/store.js");
+  const activity = await getGlobalActivity();
+  res.json(activity);
+});
+
 export default router;

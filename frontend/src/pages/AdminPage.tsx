@@ -1,12 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminGetPrograms, useAdminDeleteProgram, useAdminGetStats } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
-import { Shield, Code2, Trash2, ChevronLeft, RefreshCw, Users, BarChart3 } from "lucide-react";
+import { 
+  Shield, Code2, Trash2, ChevronLeft, RefreshCw, Users, 
+  BarChart3, Activity, Plus, Edit2, Search, TrendingUp,
+  UserPlus, UserCheck, CreditCard, Clock
+} from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -15,170 +19,457 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
+  ResponsiveContainer, AreaChart, Area, BarChart, Bar 
+} from "recharts";
+import { format } from "date-fns";
+
+// Custom hooks for new admin endpoints
+const useAdminUsers = () => {
+  return useQuery({
+    queryKey: ["admin", "users"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/users", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      if (!res.ok) throw new Error("Failed to fetch users");
+      return res.json();
+    }
+  });
+};
+
+const useAdminAnalytics = () => {
+  return useQuery({
+    queryKey: ["admin", "analytics"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/analytics", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      if (!res.ok) throw new Error("Failed to fetch analytics");
+      return res.json();
+    }
+  });
+};
+
+const useAdminActivity = () => {
+  return useQuery({
+    queryKey: ["admin", "activity"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/activity", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      if (!res.ok) throw new Error("Failed to fetch activity");
+      return res.json();
+    }
+  });
+};
 
 export default function AdminPage() {
   const { user } = useAuth();
-  useEffect(() => { document.title = "Admin Panel · LogicLens"; }, []);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => { document.title = "Admin Panel · LogicLens"; }, []);
 
   const { data: programs = [], isLoading: programsLoading, refetch: refetchPrograms } = useAdminGetPrograms();
   const { data: stats } = useAdminGetStats();
+  const { data: users = [], isLoading: usersLoading } = useAdminUsers();
+  const { data: analytics } = useAdminAnalytics();
+  const { data: activity = [] } = useAdminActivity();
+  
   const deleteProgram = useAdminDeleteProgram();
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      if (!res.ok) throw new Error("Failed to delete user");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      toast({ title: "User deleted", description: "The account has been permanently removed." });
+    }
+  });
 
   if (user?.role !== "admin") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
-          <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-lg font-semibold mb-2">Access Denied</h2>
-          <p className="text-sm text-muted-foreground mb-4">You don't have admin privileges.</p>
-          <Button onClick={() => setLocation("/dashboard")}>Go to Dashboard</Button>
+          <div className="h-16 w-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Shield className="h-8 w-8 text-destructive" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+          <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+            You are attempting to access a secure administrative area. Please return to your dashboard.
+          </p>
+          <Button onClick={() => setLocation("/dashboard")} className="min-w-[200px]">
+            Return to Dashboard
+          </Button>
         </div>
       </div>
     );
   }
 
   const handleDeleteProgram = (id: number, name: string) => {
-    deleteProgram.mutate(
-      { id },
-      {
-        onSuccess: () => {
-          toast({ title: "Program deleted", description: `"${name}" has been removed.` });
-          refetchPrograms();
-        },
-        onError: () => {
-          toast({ title: "Error", description: "Could not delete program.", variant: "destructive" });
-        },
+    deleteProgram.mutate({ id }, {
+      onSuccess: () => {
+        toast({ title: "Program deleted", description: `"${name}" removed from library.` });
+        refetchPrograms();
       }
-    );
+    });
   };
 
+  const filteredUsers = users.filter((u: any) => 
+    u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Shield className="h-5 w-5 text-primary" />
-              <h1 className="text-2xl font-bold">Admin Panel</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]">
+                <Shield className="h-6 w-6 text-primary" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+                Command Center
+              </h1>
             </div>
-            <p className="text-sm text-muted-foreground">Manage the program library and view platform stats</p>
+            <p className="text-muted-foreground">Strategic oversight for LogicLens platform operations.</p>
           </div>
-          <Link href="/dashboard">
-            <Button variant="outline" size="sm" className="gap-2">
-              <ChevronLeft className="h-3.5 w-3.5" />
-              Dashboard
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => setLocation("/dashboard")} className="bg-white/5 border-white/10 hover:bg-white/10 transition-all">
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Exit Admin
             </Button>
-          </Link>
+            <Button className="bg-primary text-primary-foreground shadow-[0_0_20px_rgba(var(--primary),0.4)] hover:shadow-[0_0_30px_rgba(var(--primary),0.6)] transition-all">
+              <Plus className="h-4 w-4 mr-2" />
+              New Program
+            </Button>
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        {/* Dynamic Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {[
-            { label: "Total Programs", value: stats?.totalPrograms ?? programs.length, icon: <Code2 className="h-4 w-4" />, color: "text-primary" },
-            { label: "Total Users", value: stats?.totalUsers ?? "–", icon: <Users className="h-4 w-4" />, color: "text-emerald-400" },
-            { label: "Total Traces", value: stats?.totalTraces ?? "–", icon: <BarChart3 className="h-4 w-4" />, color: "text-amber-400" },
-            { label: "Total Favorites", value: stats?.totalFavorites ?? "–", icon: <Shield className="h-4 w-4" />, color: "text-purple-400" },
-          ].map((stat) => (
-            <Card key={stat.label} className="bg-card border-border">
-              <CardContent className="p-4">
-                <div className={`flex items-center gap-2 ${stat.color} mb-2`}>
+            { label: "Growth", value: stats?.totalUsers ?? "–", sub: "Total Active Users", icon: <Users className="h-5 w-5" />, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+            { label: "Activity", value: stats?.totalTraces ?? "–", sub: "Simulations Ran", icon: <Activity className="h-5 w-5" />, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
+            { label: "Library", value: programs.length, sub: "Sample Algorithms", icon: <Code2 className="h-5 w-5" />, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+            { label: "Retention", value: stats?.totalFavorites ?? "–", sub: "User Favorites", icon: <TrendingUp className="h-5 w-5" />, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
+          ].map((stat, i) => (
+            <Card key={i} className={`bg-card/30 backdrop-blur-md ${stat.border} border border-white/5 overflow-hidden group`}>
+              <CardContent className="p-6 relative">
+                <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity`}>
                   {stat.icon}
-                  <span className="text-xs text-muted-foreground">{stat.label}</span>
                 </div>
-                <p className="text-2xl font-bold">{stat.value}</p>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`p-2 rounded-lg ${stat.bg} ${stat.color}`}>
+                    {stat.icon}
+                  </div>
+                  <span className="text-sm font-medium text-muted-foreground">{stat.label}</span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-3xl font-bold">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground">{stat.sub}</p>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <Tabs defaultValue="programs">
-          <TabsList className="mb-6">
-            <TabsTrigger value="programs" className="gap-2">
-              <Code2 className="h-3.5 w-3.5" /> Programs
+        <Tabs defaultValue="analytics" className="space-y-6">
+          <TabsList className="bg-white/5 border-white/10 p-1 h-auto grid grid-cols-4 w-full md:w-auto max-w-md">
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2 text-xs">
+              <BarChart3 className="h-3.5 w-3.5 mr-2" /> Analytics
+            </TabsTrigger>
+            <TabsTrigger value="users" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2 text-xs">
+              <Users className="h-3.5 w-3.5 mr-2" /> Users
+            </TabsTrigger>
+            <TabsTrigger value="programs" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2 text-xs">
+              <Code2 className="h-3.5 w-3.5 mr-2" /> Programs
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2 text-xs">
+              <Activity className="h-3.5 w-3.5 mr-2" /> Activity
             </TabsTrigger>
           </TabsList>
 
-          {/* Programs Tab */}
-          <TabsContent value="programs">
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3 flex-row items-center justify-between">
-                <CardTitle className="text-base">Program Library</CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => refetchPrograms()} className="gap-1.5 text-xs">
-                  <RefreshCw className="h-3.5 w-3.5" /> Refresh
-                </Button>
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="bg-card/40 border-white/5">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <UserPlus className="h-4 w-4 text-emerald-400" />
+                    User Registration Trend
+                  </CardTitle>
+                  <CardDescription>New account signups over the last 30 days</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={analytics?.registrations || []}>
+                      <defs>
+                        <linearGradient id="colorReg" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+                      <XAxis dataKey="date" hide />
+                      <YAxis stroke="#555" fontSize={12} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: "#111", border: "1px solid #333", borderRadius: "8px" }}
+                        itemStyle={{ color: "#10b981" }}
+                      />
+                      <Area type="monotone" dataKey="count" stroke="#10b981" fillOpacity={1} fill="url(#colorReg)" strokeWidth={2} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/40 border-white/5">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-primary" />
+                    Simulation Volume
+                  </CardTitle>
+                  <CardDescription>Total code traces executed globally</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analytics?.traceActivity || []}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+                      <XAxis dataKey="date" hide />
+                      <YAxis stroke="#555" fontSize={12} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: "#111", border: "1px solid #333", borderRadius: "8px" }}
+                        itemStyle={{ color: "hsl(var(--primary))" }}
+                      />
+                      <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="animate-in fade-in slide-in-from-bottom-2">
+            <Card className="bg-card/40 border-white/5">
+              <CardHeader className="flex flex-row items-center justify-between pb-6">
+                <div>
+                  <CardTitle className="text-lg">User Accounts</CardTitle>
+                  <CardDescription>Manage roles and plan access for all users</CardDescription>
+                </div>
+                <div className="relative w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search users..." 
+                    className="pl-9 bg-white/5 border-white/10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
               </CardHeader>
               <CardContent>
-                {programsLoading ? (
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => <div key={i} className="h-12 rounded bg-muted animate-pulse" />)}
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Difficulty</TableHead>
-                        <TableHead className="w-12" />
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {programs.map((prog) => (
-                        <TableRow key={prog.id} data-testid={`program-row-${prog.id}`}>
-                          <TableCell className="font-medium text-sm">{prog.name}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="text-xs">
-                              {prog.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <span className={`text-xs capitalize ${
-                              prog.difficulty === "beginner" ? "text-emerald-400"
-                              : prog.difficulty === "intermediate" ? "text-amber-400"
-                              : "text-red-400"
-                            }`}>
-                              {prog.difficulty}
-                            </span>
-                          </TableCell>
-                          <TableCell>
+                <Table>
+                  <TableHeader className="bg-white/5">
+                    <TableRow className="border-white/5 hover:bg-transparent">
+                      <TableHead>User</TableHead>
+                      <TableHead>Account Status</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((u: any) => (
+                      <TableRow key={u.id} className="border-white/5 hover:bg-white/[0.02] transition-colors">
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{u.name}</span>
+                            <span className="text-xs text-muted-foreground">{u.email}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={u.planType === 'pro' ? 'border-amber-500/50 text-amber-400 bg-amber-500/5' : 'text-muted-foreground'}>
+                            {u.planType === 'pro' ? <CreditCard className="h-3 w-3 mr-1" /> : null}
+                            {u.planType === 'pro' ? 'Pro Plan' : 'Free Tier'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={u.role === 'admin' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-white/10 text-white border-white/10'}>
+                            {u.role === 'admin' ? <Shield className="h-3 w-3 mr-1" /> : null}
+                            {u.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-xs">
+                          {format(new Date(u.createdAt), "MMM d, yyyy")}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-white">
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </Button>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                                  data-testid={`delete-program-${prog.id}`}
-                                >
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent>
+                              <AlertDialogContent className="bg-[#111] border-white/10">
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete program?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will permanently delete "{prog.name}" from the library. This cannot be undone.
+                                  <AlertDialogTitle>Delete User?</AlertDialogTitle>
+                                  <AlertDialogDescription className="text-muted-foreground">
+                                    Are you sure you want to delete {u.name}? This action is irreversible and will remove all their saved traces.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteProgram(prog.id, prog.name)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  <AlertDialogCancel className="bg-white/5 border-white/10">Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => deleteUserMutation.mutate(u.id)}
+                                    className="bg-destructive text-white hover:bg-destructive/90"
                                   >
-                                    Delete
+                                    Delete Account
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Activity Tab */}
+          <TabsContent value="activity" className="animate-in fade-in slide-in-from-bottom-2">
+            <Card className="bg-card/40 border-white/5">
+              <CardHeader>
+                <CardTitle className="text-lg">Real-time Platform Activity</CardTitle>
+                <CardDescription>Live stream of code traces and simulations globally</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {activity.map((item: any) => (
+                    <div key={item.id} className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-white/5 group hover:border-primary/30 transition-all">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                        <Code2 className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm">{item.userName}</span>
+                          <span className="text-muted-foreground text-xs">traced</span>
+                          <span className="text-primary text-xs font-mono">{item.title}</span>
+                        </div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <Badge variant="secondary" className="text-[10px] h-4 py-0">{item.category}</Badge>
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {format(new Date(item.savedAt), "HH:mm:ss")}
+                          </span>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        View Trace
+                      </Button>
+                    </div>
+                  ))}
+                  {activity.length === 0 && (
+                    <div className="text-center py-20 text-muted-foreground">
+                      <Activity className="h-12 w-12 mx-auto mb-4 opacity-10" />
+                      <p>No platform activity recorded yet.</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Programs Tab (Original refined) */}
+          <TabsContent value="programs" className="animate-in fade-in slide-in-from-bottom-2">
+            <Card className="bg-card/40 border-white/5">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg text-white">Algorithm Library</CardTitle>
+                  <CardDescription>Central repository of educational sample programs</CardDescription>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => refetchPrograms()} className="text-xs gap-2">
+                  <RefreshCw className={`h-3.5 w-3.5 ${programsLoading ? 'animate-spin' : ''}`} />
+                  Sync Library
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader className="bg-white/5">
+                    <TableRow className="border-white/5 hover:bg-transparent">
+                      <TableHead>Algorithm Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Complexity</TableHead>
+                      <TableHead className="text-right">Manage</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {programs.map((prog) => (
+                      <TableRow key={prog.id} className="border-white/5 hover:bg-white/[0.02]">
+                        <TableCell className="font-medium text-sm text-white/90">{prog.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-white/5 text-white/60 border-white/10 hover:bg-white/10 text-[10px]">
+                            {prog.category}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                            prog.difficulty === "beginner" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : prog.difficulty === "intermediate" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            : "bg-red-500/10 text-red-400 border border-red-500/20"
+                          }`}>
+                            {prog.difficulty.toUpperCase()}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10">
+                              <Edit2 className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/20 hover:text-destructive group">
+                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground group-hover:text-destructive" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="bg-[#111] border-white/10">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Algorithm?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    "{prog.name}" will be removed from the public library. This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="bg-white/5">Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteProgram(prog.id, prog.name)} className="bg-destructive text-white hover:bg-destructive/90">
+                                    Remove Program
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
