@@ -94,16 +94,67 @@ export default function WorkspacePage() {
     });
   }, [searchQuery, selectedCategory]);
 
+  // Initial Load Logic - Handle URL parameters for deep-linking
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const progId = params.get("program");
+    const categoryParam = params.get("category");
+    const subtypeParam = params.get("subtype");
+
+    if (progId) {
+      const prog = SAMPLE_PROGRAMS.find(p => p.id === parseInt(progId));
+      if (prog) {
+        setSelectedProgram(prog);
+        setSelectedCategory(prog.category);
+        return;
+      }
+    }
+
+    if (subtypeParam) {
+      const prog = SAMPLE_PROGRAMS.find(p => p.subtype === subtypeParam);
+      if (prog) {
+        setSelectedProgram(prog);
+        setSelectedCategory(prog.category);
+        return;
+      }
+    }
+
+    if (categoryParam) {
+      const decodedCat = decodeURIComponent(categoryParam);
+      setSelectedCategory(decodedCat);
+      const catProgs = SAMPLE_PROGRAMS.filter(p => p.category === decodedCat);
+      if (catProgs.length > 0) {
+        setSelectedProgram(catProgs[0]);
+        return;
+      }
+    }
+
+    // Default fallback if no valid params
     if (!selectedProgram && filteredPrograms.length > 0) {
       setSelectedProgram(filteredPrograms[0]);
     }
   }, []);
 
-  // Handle Shared Traces
+  // Handle Shared Traces and URL Parameter Updates
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const shareSlug = params.get("share");
+    const progId = params.get("program");
+    const subtypeParam = params.get("subtype");
+    const categoryParam = params.get("category");
+
+    // Handle Program/Subtype updates
+    if (progId) {
+      const prog = SAMPLE_PROGRAMS.find(p => p.id === parseInt(progId));
+      if (prog && prog.id !== selectedProgram?.id) setSelectedProgram(prog);
+    } else if (subtypeParam) {
+      const prog = SAMPLE_PROGRAMS.find(p => p.subtype === subtypeParam);
+      if (prog && prog.subtype !== selectedProgram?.subtype) setSelectedProgram(prog);
+    } else if (categoryParam) {
+      const decodedCat = decodeURIComponent(categoryParam);
+      if (decodedCat !== selectedCategory) setSelectedCategory(decodedCat);
+    }
+
     if (shareSlug) {
       toast({ title: "Loading shared trace...", description: "Fetching shared logic from the cloud." });
       // In a real app, you'd use useGetTraceBySlug hook
