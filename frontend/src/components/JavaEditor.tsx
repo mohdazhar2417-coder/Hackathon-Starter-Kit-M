@@ -20,13 +20,13 @@ export const JavaEditor: React.FC<JavaEditorProps> = ({ code, highlightLine, wid
   }
 
   useEffect(() => {
-    if (!editorRef.current || !monacoRef.current || !highlightLine) return;
+    if (!editorRef.current || !monacoRef.current) return;
 
     const editor = editorRef.current;
     const monaco = monacoRef.current;
 
     // Apply decorations (highlighting)
-    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, [
+    const newDecorations = highlightLine ? [
       {
         range: new monaco.Range(highlightLine, 1, highlightLine, 1),
         options: {
@@ -36,10 +36,14 @@ export const JavaEditor: React.FC<JavaEditorProps> = ({ code, highlightLine, wid
           marginClassName: "bg-primary/10",
         },
       },
-    ]);
+    ] : [];
 
-    // Auto-scroll to active line
-    editor.revealLineInCenter(highlightLine, monaco.editor.ScrollType.Smooth);
+    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
+
+    if (highlightLine) {
+      // Auto-scroll to active line
+      editor.revealLineInCenter(highlightLine, monaco.editor.ScrollType.Smooth);
+    }
   }, [highlightLine]);
 
   // Force layout recalculation when dimensions change

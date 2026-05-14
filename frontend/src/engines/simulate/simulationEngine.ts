@@ -258,8 +258,10 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
   }
 
   function findLineNumber(raw: string): number {
+    if (!raw) return 1;
+    const firstLine = raw.split("\n")[0].trim();
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim() === raw.trim()) return i + 1;
+      if (lines[i].trim().includes(firstLine)) return i + 1;
     }
     return 1;
   }
@@ -447,6 +449,13 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
 
     for (let i = 0; i < text.length; i++) {
       const ch = text[i];
+      
+      // Update line tracking before appending to current
+      if (!inStr && current.trim() === "") {
+        if (ch === "\n") tokenStartLine = currentLine + 1;
+        else if (ch === " ") tokenStartLine = currentLine;
+      }
+
       if (ch === '"' && text[i - 1] !== "\\") inStr = !inStr;
       
       if (!inStr) {
@@ -477,7 +486,6 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
         current += ch;
       }
       if (ch === "\n") currentLine++;
-      if (current === "" && (ch === "\n" || ch === " ")) tokenStartLine = currentLine;
     }
     pushToken();
     return result.filter(t => t.text);
@@ -731,7 +739,12 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
         // Execute init
         const initToken = tokenizeBody(stmt.init + ";", stmt.line)[0];
         const initStmt = parseStatement([initToken], 0);
-        if (initStmt) execStatement(initStmt.stmt);
+        if (initStmt) {
+          // Force the init statement to use the loop's line and nodeId
+          initStmt.stmt.line = stmt.line;
+          initStmt.stmt.nodeId = stmt.nodeId;
+          execStatement(initStmt.stmt);
+        }
 
         let loopCount = 0;
         while (loopCount < MAX_LOOPS) {
@@ -743,7 +756,7 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
             "loop",
             `Loop Condition Check (Iteration ${currentIteration})`,
             `Is ${stmt.condition} still true? ${condResult ? "Yes" : "No"}`,
-            `for condition: ${stmt.condition}`,
+            stmt.raw, // Use original header for better mapping
             variables,
             variables,
             "",
@@ -757,16 +770,20 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
           if (!condResult) break;
 
           // Body execution
-          // We need a special title for body steps
           const oldIterationTitle = currentIteration;
-          execStatements(stmt.body.map(s => ({ ...s, loopTitle: `Loop Body Execution (Iteration ${oldIterationTitle})` })));
+          execStatements(stmt.body.map(s => ({ ...s, loopTitle: `Loop Body (Iter ${oldIterationTitle})` })));
           
           if (breakFlag) { breakFlag = false; break; }
 
           // Update
           const updateToken = tokenizeBody(stmt.update + ";", stmt.line)[0];
           const updateStmt = parseStatement([updateToken], 0);
-          if (updateStmt) execStatement(updateStmt.stmt);
+          if (updateStmt) {
+            // Force the update statement to use the loop's line and nodeId
+            updateStmt.stmt.line = stmt.line;
+            updateStmt.stmt.nodeId = stmt.nodeId;
+            execStatement(updateStmt.stmt);
+          }
           
           loopCount++;
           if (stepCounter >= MAX_STEPS) break;
@@ -797,7 +814,7 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
             "loop",
             `Loop Condition Check (Iteration ${currentIteration})`,
             `Is ${stmt.condition} still true? ${condResult ? "Yes" : "No"}`,
-            `while (${stmt.condition})`,
+            stmt.raw,
             variables,
             variables,
             "",
@@ -852,9 +869,13 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
   // Extract body of main method
   // Match the main method and its body, stopping at the corresponding closing brace
   let body = code;
+  let methodStartLine = 1;
   const mainHeaderMatch = code.match(/public\s+static\s+void\s+main\s*\(String\[\]\s+\w+\)\s*\{/);
   if (mainHeaderMatch) {
     const startIdx = mainHeaderMatch.index! + mainHeaderMatch[0].length;
+    const prefix = code.substring(0, startIdx);
+    methodStartLine = prefix.split("\n").length;
+
     let depth = 1;
     let endIdx = startIdx;
     while (depth > 0 && endIdx < code.length) {
@@ -872,7 +893,7 @@ export function simulate(code: string, customInputs: CustomInputs = {}): Simulat
     inputDefaults[k] = typeof v === "string" ? parseFloat(v) || 0 : v;
   }
 
-  const stmts = parseBody(body);
+  const stmts = parseBody(body, methodStartLine);
   const graph = generateGraph(stmts);
 
   // Start step
