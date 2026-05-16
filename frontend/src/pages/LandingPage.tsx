@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Code2, GitBranch, BarChart3, BookOpen, Zap, ChevronRight,
-  Play, Terminal, ArrowRight, Check, Users, Star,
+  Play, Terminal, ArrowRight, Check, Users, Star, Shield,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
@@ -121,18 +121,39 @@ const howItWorks = [
   },
 ];
 
+const educatorFeatures = [
+  {
+    icon: <Users className="h-5 w-5" />,
+    title: "Classroom Oversight",
+    description: "The Elite Admin Panel gives instructors a bird's-eye view of all student activity and progress.",
+    color: "text-emerald-400", bg: "bg-emerald-400/10",
+  },
+  {
+    icon: <BarChart3 className="h-5 w-5" />,
+    title: "Performance Analytics",
+    description: "Identify common logic pitfalls across your entire cohort with global trace analytics.",
+    color: "text-primary", bg: "bg-primary/10",
+  },
+  {
+    icon: <Shield className="h-5 w-5" />,
+    title: "Campus-Wide Licensing",
+    description: "Easily onboard hundreds of students at once with institutional SSO and bulk seat management.",
+    color: "text-amber-400", bg: "bg-amber-500/10",
+  }
+];
+
 const testimonials = [
+  {
+    quote: "LogicLens has transformed how we teach loops. Students can finally 'see' the off-by-one errors that used to take hours to debug.",
+    name: "Dr. Aris T.",
+    role: "Head of CS Department",
+    avatar: "A",
+  },
   {
     quote: "I finally understood why my loop wasn't stopping — LogicLens showed me exactly which condition was false at each step.",
     name: "Sarah K.",
     role: "CS101 Student",
     avatar: "S",
-  },
-  {
-    quote: "I struggled with recursion for weeks. Watching the call stack grow and shrink step-by-step made it click instantly.",
-    name: "Marcus T.",
-    role: "Bootcamp Learner",
-    avatar: "M",
   },
   {
     quote: "The variable tracker is a game changer. I can finally see what 'reversed' actually holds at each loop iteration.",
@@ -366,6 +387,83 @@ export default function LandingPage() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Educators Section */}
+      <section className="py-24 bg-primary/[0.03] border-b border-border relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <Badge variant="secondary" className="mb-4 text-xs font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                For Institutions
+              </Badge>
+              <h2 className="text-4xl font-bold mb-6 leading-tight">
+                Empower your instructors. <br />
+                <span className="text-muted-foreground">Standardize your curriculum.</span>
+              </h2>
+              <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
+                LogicLens isn't just a learning tool—it's an instructional powerhouse. 
+                Provide your students with a consistent, visual framework for understanding 
+                logic while giving your teachers the data they need to lead effectively.
+              </p>
+              <div className="space-y-6">
+                {educatorFeatures.map((f, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className={`h-10 w-10 shrink-0 rounded-lg ${f.bg} ${f.color} flex items-center justify-center border border-white/5`}>
+                      {f.icon}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm mb-1">{f.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{f.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-10">
+                <Link href="/pricing">
+                  <Button variant="outline" className="gap-2 border-white/10 hover:bg-white/5">
+                    View Institutional Plans
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-primary/20 blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <Card className="bg-card/40 backdrop-blur-2xl border-white/10 overflow-hidden relative shadow-2xl">
+                <CardContent className="p-0">
+                  <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-primary" />
+                      <span className="text-xs font-bold uppercase tracking-widest text-white/70">Instructor Command Center</span>
+                    </div>
+                    <Badge variant="secondary" className="text-[10px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Live Analytics</Badge>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Class Avg. Progress</p>
+                        <p className="text-xl font-bold">87%</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Common Pitfall</p>
+                        <p className="text-xl font-bold text-amber-400">Nested Loops</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary/50" style={{ width: `${100 - i * 20}%` }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>

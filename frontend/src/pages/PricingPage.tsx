@@ -24,31 +24,31 @@ const PLANS = [
   },
   {
     name: "Pro",
-    price: "9",
-    description: "Advanced tools for deep algorithm analysis.",
+    price: "12",
+    description: "Advanced tools for competitive coders and CS students.",
     features: [
       "Everything in Free",
       "Unlimited saved traces",
       "Public trace sharing",
-      "Advanced Java support (Methods/Objects)",
-      "Priority execution",
+      "AI-Generated Explanations (Beta)",
+      "Priority simulation speed",
     ],
     buttonText: "Upgrade to Pro",
     highlight: true,
     pro: true
   },
   {
-    name: "Enterprise",
-    price: "49",
-    description: "For universities and coding bootcamps.",
+    name: "Institutional",
+    price: "Custom",
+    description: "For universities, colleges, and coding bootcamps.",
     features: [
       "Everything in Pro",
-      "Classroom management",
-      "Bulk student licenses",
-      "SSO Integration",
-      "Custom branding",
+      "Teacher Insight Dashboard",
+      "Bulk student seat management",
+      "SSO & LMS Integration",
+      "Dedicated account manager",
     ],
-    buttonText: "Contact Sales",
+    buttonText: "Request Institutional Quote",
     highlight: false,
     pro: false
   }
@@ -61,8 +61,8 @@ export default function PricingPage() {
 
   const handleUpgrade = async (planName: string) => {
     if (planName === "Free") return;
-    if (planName === "Enterprise") {
-      window.location.href = "mailto:sales@logiclens.dev";
+    if (planName === "Institutional") {
+      window.location.href = "mailto:sales@logiclens.dev?subject=Institutional License Inquiry - LogicLens";
       return;
     }
 
