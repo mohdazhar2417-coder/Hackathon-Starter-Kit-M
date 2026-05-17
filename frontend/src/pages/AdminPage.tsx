@@ -33,7 +33,7 @@ const useAdminUsers = () => {
     queryKey: ["admin", "users"],
     queryFn: async () => {
       const res = await fetch("/api/admin/users", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
       if (!res.ok) throw new Error("Failed to fetch users");
       return res.json();
@@ -46,7 +46,7 @@ const useAdminAnalytics = () => {
     queryKey: ["admin", "analytics"],
     queryFn: async () => {
       const res = await fetch("/api/admin/analytics", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
       if (!res.ok) throw new Error("Failed to fetch analytics");
       return res.json();
@@ -59,7 +59,7 @@ const useAdminActivity = () => {
     queryKey: ["admin", "activity"],
     queryFn: async () => {
       const res = await fetch("/api/admin/activity", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
       if (!res.ok) throw new Error("Failed to fetch activity");
       return res.json();
@@ -87,7 +87,7 @@ export default function AdminPage() {
     mutationFn: async (id: number) => {
       const res = await fetch(`/api/admin/users/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
       if (!res.ok) throw new Error("Failed to delete user");
     },
@@ -356,16 +356,24 @@ export default function AdminPage() {
           {/* Activity Tab */}
           <TabsContent value="activity" className="animate-in fade-in slide-in-from-bottom-2">
             <Card className="bg-card/40 border-white/5">
-              <CardHeader>
-                <CardTitle className="text-lg">Real-time Platform Activity</CardTitle>
-                <CardDescription>Live stream of code traces and simulations globally</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Real-time Platform Activity</CardTitle>
+                  <CardDescription>Live stream of code traces and simulations globally</CardDescription>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">System Live</span>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {activity.map((item: any) => (
-                    <div key={item.id} className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-white/5 group hover:border-primary/30 transition-all">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <div key={item.id} className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-white/5 group hover:border-primary/30 transition-all relative overflow-hidden">
+                      <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 relative z-10">
                         <Code2 className="h-5 w-5 text-primary" />
+                        <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">

@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Code2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "@/components/Logo";
+import { Label } from "@/components/ui/label";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,6 +29,7 @@ export default function SignupPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [facultyCode, setFacultyCode] = useState("");
 
   useEffect(() => { document.title = "Create Account · LogicLens"; }, []);
 
@@ -175,8 +177,44 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={signupMutation.isPending} data-testid="button-submit">
-                {signupMutation.isPending ? "Creating account..." : "Create Account"}
+
+              {form.watch("role") === "admin" && (
+                <div className="space-y-4 pt-4 border-t border-border mt-4">
+                  <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Authorization Required</p>
+                    <p className="text-[11px] text-muted-foreground leading-tight">Faculty accounts must be verified with an institutional secret code.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="faculty-code" className="text-sm font-medium block">Faculty Secret Code</label>
+                    <input 
+                      id="faculty-code"
+                      type="password"
+                      placeholder="Enter secret code" 
+                      className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 border-primary/20"
+                      onChange={(e) => setFacultyCode(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full mt-6 shadow-lg shadow-primary/20" 
+                disabled={signupMutation.isPending} 
+                data-testid="button-submit"
+                onClick={(e) => {
+                  if (form.getValues("role") === "admin" && facultyCode !== "FACULTY2024") {
+                    e.preventDefault();
+                    toast({ 
+                      title: "Unauthorized Access", 
+                      description: "The faculty authorization code is invalid.", 
+                      variant: "destructive" 
+                    });
+                  }
+                }}
+              >
+                {signupMutation.isPending ? "Configuring Account..." : "Create Account"}
               </Button>
             </form>
           </Form>

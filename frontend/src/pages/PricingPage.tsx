@@ -45,12 +45,14 @@ const PLANS = [
       "Everything in Pro",
       "Teacher Insight Dashboard",
       "Bulk student seat management",
-      "SSO & LMS Integration",
-      "Dedicated account manager",
+      "LMS & Single Sign-On (SSO)",
+      "24/7 Priority Support",
+      "Custom Curriculum Integration",
     ],
     buttonText: "Request Institutional Quote",
     highlight: false,
-    pro: false
+    pro: false,
+    special: true
   }
 ];
 
@@ -61,35 +63,15 @@ export default function PricingPage() {
 
   const handleUpgrade = async (planName: string) => {
     if (planName === "Free") return;
+
     if (planName === "Institutional") {
-      window.location.href = "mailto:sales@logiclens.dev?subject=Institutional License Inquiry - LogicLens";
+      window.location.href = `mailto:sales@logiclens.dev?subject=Institutional License Inquiry - LogicLens&body=Hello, I am interested in a campus-wide license for our institution. Please provide a quote for the yearly plan.`;
       return;
     }
 
-    setLoading(planName);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/payments/create-checkout-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("logiclens_token")}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || "Failed to create checkout session");
-      }
-    } catch (err: any) {
-      toast({
-        title: "Upgrade failed",
-        description: err.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(null);
+    if (planName === "Pro") {
+      window.location.href = `mailto:sales@logiclens.dev?subject=Pro Individual License Request&body=I would like to upgrade my account to Pro. Please provide the manual payment instructions.`;
+      return;
     }
   };
 
@@ -132,15 +114,24 @@ export default function PricingPage() {
           >
             <Card className={cn(
               "relative h-full flex flex-col border-border/40 bg-card/50 backdrop-blur-xl transition-all hover:border-primary/40",
-              plan.highlight && "ring-2 ring-primary shadow-2xl shadow-primary/20 bg-primary/[0.02]"
+              plan.highlight && "ring-2 ring-primary shadow-2xl shadow-primary/20 bg-primary/[0.02]",
+              plan.special && "border-indigo-500/30 bg-indigo-500/[0.02] shadow-2xl shadow-indigo-500/10 hover:border-indigo-500/50"
             )}>
               {plan.highlight && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
                   Most Popular
                 </div>
               )}
+              {plan.special && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(99,102,241,0.5)]">
+                  Campus Ready
+                </div>
+              )}
               <CardHeader>
-                <CardTitle className="text-2xl font-black uppercase tracking-tight">{plan.name}</CardTitle>
+                <CardTitle className={cn(
+                  "text-2xl font-black uppercase tracking-tight",
+                  plan.special && "text-indigo-400"
+                )}>{plan.name}</CardTitle>
                 <CardDescription className="text-sm">{plan.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-1 space-y-6">

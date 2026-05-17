@@ -31,7 +31,15 @@ app.use(
 );
 app.use(
   cors({
-    origin: [env.FRONTEND_URL, "http://localhost:5173"],
+    origin: (origin, callback) => {
+      // Allow any local origin or the configured FRONTEND_URL
+      const isLocal = !origin || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:");
+      if (isLocal || origin === env.FRONTEND_URL) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
