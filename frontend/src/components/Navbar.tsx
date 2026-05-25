@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import {
   ChevronDown, Code2, LogOut, LayoutDashboard,
-  BookMarked, Heart, Shield, Menu, X, Play,
+  BookMarked, Heart, Shield, Menu, X, Play, CreditCard
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
@@ -27,6 +27,7 @@ export function Navbar() {
         { href: "/workspace", label: "Workspace", icon: <Play className="h-4 w-4" /> },
         { href: "/traces", label: "Saved Traces", icon: <BookMarked className="h-4 w-4" /> },
         { href: "/favorites", label: "Favorites", icon: <Heart className="h-4 w-4" /> },
+        { href: "/pricing", label: "Pricing", icon: <CreditCard className="h-4 w-4" /> },
         ...(user?.role === "admin" ? [{ href: "/admin", label: "Admin", icon: <Shield className="h-4 w-4" /> }] : []),
       ]
     : [];
@@ -95,6 +96,9 @@ export function Navbar() {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/workspace"><Play className="h-4 w-4 mr-2" />Workspace</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/pricing"><CreditCard className="h-4 w-4 mr-2" />Pricing / Upgrade</Link>
                     </DropdownMenuItem>
                     {user?.role === "admin" && (
                       <DropdownMenuItem asChild>

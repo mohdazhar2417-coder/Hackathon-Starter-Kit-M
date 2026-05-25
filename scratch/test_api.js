@@ -1,4 +1,4 @@
-// Programmatic validation script to check signup, login, CORS capabilities, and token usage using native global fetch.
+// Programmatic validation script to check signup, login, CORS capabilities, and the new mock-checkout API.
 async function runTests() {
   const BACKEND_URL = "http://localhost:3000";
 
@@ -33,37 +33,28 @@ async function runTests() {
       console.log(`Role assigned: "${authData.user.role}"`);
       const token = authData.token;
 
-      // 3. Test Admin Protected Dashboard APIs
-      console.log("\n[Test 3] Calling Admin Protected User Management Endpoint...");
-      const adminUsersRes = await fetch(`${BACKEND_URL}/api/admin/users`, {
-        method: "GET",
+      // 3. Test the new Simulated Payment Mock Checkout API
+      console.log("\n[Test 3] Testing the new Simulated Payment Mock Checkout Endpoint...");
+      const mockCheckoutRes = await fetch(`${BACKEND_URL}/api/payments/mock-checkout`, {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({
+          planType: "pro"
+        })
       });
 
-      if (adminUsersRes.ok) {
-        const users = await adminUsersRes.json();
-        console.log(`✅ Admin Authorized Endpoint PASSED! Recieved ${users.length} users:`);
-        users.forEach(u => console.log(` - ID: ${u.id}, Name: "${u.name}", Email: "${u.email}", Role: "${u.role}"`));
+      if (mockCheckoutRes.ok) {
+        const checkoutData = await mockCheckoutRes.json();
+        console.log("✅ Mock Checkout Endpoint PASSED!");
+        console.log(`Response Payload:`, JSON.stringify(checkoutData, null, 2));
       } else {
-        console.error(`❌ Admin Endpoint FAILED with status: ${adminUsersRes.status}`);
+        console.error(`❌ Mock Checkout Endpoint FAILED with status: ${mockCheckoutRes.status}`);
+        const errText = await mockCheckoutRes.text();
+        console.error(`Error details: ${errText}`);
       }
-
-      // 4. Test CORS preflight capability
-      console.log("\n[Test 4] Simulating CORS Preflight Request from port 5177...");
-      const corsRes = await fetch(`${BACKEND_URL}/api/auth/login`, {
-        method: "OPTIONS",
-        headers: {
-          "Origin": "http://localhost:5177",
-          "Access-Control-Request-Method": "POST",
-          "Access-Control-Request-Headers": "content-type"
-        }
-      });
-
-      console.log(`✅ CORS Preflight Response Status: ${corsRes.status}`);
-      console.log(`Access-Control-Allow-Origin: ${corsRes.headers.get("access-control-allow-origin")}`);
-      console.log(`Access-Control-Allow-Credentials: ${corsRes.headers.get("access-control-allow-credentials")}`);
 
     } else {
       console.error(`❌ Admin Login failed with status: ${loginRes.status}`);

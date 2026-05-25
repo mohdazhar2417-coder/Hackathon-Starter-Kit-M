@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Sparkles, Zap, Shield, Globe, Cpu } from "lucide-react";
+import { Check, Sparkles, Zap, Shield, Globe, Cpu, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { CheckoutModal } from "@/components/CheckoutModal";
 
 const PLANS = [
   {
@@ -57,22 +58,19 @@ const PLANS = [
 ];
 
 export default function PricingPage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { toast } = useToast();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState<{ name: string; price: string }>({ name: "", price: "" });
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handleUpgrade = async (planName: string) => {
+  const handleUpgrade = (planName: string) => {
     if (planName === "Free") return;
-
-    if (planName === "Institutional") {
-      window.location.href = `mailto:sales@logiclens.dev?subject=Institutional License Inquiry - LogicLens&body=Hello, I am interested in a campus-wide license for our institution. Please provide a quote for the yearly plan.`;
-      return;
-    }
-
-    if (planName === "Pro") {
-      window.location.href = `mailto:sales@logiclens.dev?subject=Pro Individual License Request&body=I would like to upgrade my account to Pro. Please provide the manual payment instructions.`;
-      return;
-    }
+    setCheckoutPlan({ 
+      name: planName, 
+      price: planName === "Institutional" ? "9999" : "299" 
+    });
+    setIsCheckoutOpen(true);
   };
 
   return (
@@ -156,37 +154,44 @@ export default function PricingPage() {
                     "w-full h-12 text-xs font-black uppercase tracking-widest rounded-xl transition-all",
                     plan.highlight ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-white/5 text-white/60 hover:bg-white/10"
                   )}
-                  disabled={loading === plan.name || (plan.name === "Free" && user?.planType === "free")}
-                  onClick={() => handleUpgrade(plan.name)}
-                >
-                  {loading === plan.name ? <Zap className="h-4 w-4 animate-spin" /> : plan.buttonText}
-                </Button>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+                    disabled={loading === plan.name || (plan.name === "Free" && user?.planType === "free")}
+                    onClick={() => handleUpgrade(plan.name)}
+                  >
+                    {loading === plan.name ? <Loader2 className="h-4 w-4 animate-spin" /> : plan.buttonText}
+                  </Button>
+                </CardFooter>
+             </Card>
+           </motion.div>
+         ))}
+       </div>
+ 
+       <div className="mt-24 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+         <div className="flex gap-4">
+           <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+             <Shield className="h-6 w-6 text-primary" />
+           </div>
+           <div className="space-y-1">
+             <h3 className="font-black uppercase tracking-widest text-sm">Secure Payments</h3>
+             <p className="text-xs text-muted-foreground">All transactions are processed with 256-bit encryption.</p>
+           </div>
+         </div>
+         <div className="flex gap-4">
+           <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+             <Globe className="h-6 w-6 text-primary" />
+           </div>
+           <div className="space-y-1">
+             <h3 className="font-black uppercase tracking-widest text-sm">Cloud Sync</h3>
+             <p className="text-xs text-muted-foreground">Access your logic traces from any device, anywhere in the world.</p>
+           </div>
+         </div>
+       </div>
 
-      <div className="mt-24 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div className="flex gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
-            <Shield className="h-6 w-6 text-primary" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-black uppercase tracking-widest text-sm">Secure Payments</h3>
-            <p className="text-xs text-muted-foreground">All transactions are processed via Stripe with 256-bit encryption.</p>
-          </div>
-        </div>
-        <div className="flex gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
-            <Globe className="h-6 w-6 text-primary" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-black uppercase tracking-widest text-sm">Cloud Sync</h3>
-            <p className="text-xs text-muted-foreground">Access your logic traces from any device, anywhere in the world.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+       <CheckoutModal 
+         isOpen={isCheckoutOpen} 
+         onClose={() => setIsCheckoutOpen(false)} 
+         planName={checkoutPlan.name} 
+         price={checkoutPlan.price} 
+       />
+     </div>
+   );
 }

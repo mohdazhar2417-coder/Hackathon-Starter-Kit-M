@@ -26,7 +26,13 @@ const envSchema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRO_PRICE_ID: z.string().optional(),
+  STRIPE_INSTITUTIONAL_PRICE_ID: z.string().optional(),
   USE_MEMORY_DB: z.string().optional(),
+  INSTAMOJO_API_KEY: z.string().optional(),
+  INSTAMOJO_AUTH_TOKEN: z.string().optional(),
+  INSTAMOJO_SALT: z.string().optional(),
+  INSTAMOJO_SANDBOX: z.string().optional(),
+  UPI_VPA: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

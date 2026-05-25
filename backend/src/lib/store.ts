@@ -214,6 +214,7 @@ export async function updateUser(
     return cloneUser(memoryUsers[index]);
   }
 
+  const { db, usersTable } = await loadDbModule();
   const [user] = await db
     .update(usersTable)
     .set(input)
@@ -221,6 +222,133 @@ export async function updateUser(
     .returning();
   return user ? cloneUser(user) : null;
 }
+
+export interface PaymentRecord {
+  id: number;
+  userId: number;
+  planType: string;
+  amount: string;
+  paymentMethod: string;
+  paymentRequestId: string;
+  status: string; // "pending" | "completed" | "failed"
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const memoryPayments: PaymentRecord[] = [];
+let nextPaymentId = 1;
+
+export async function createPaymentRecord(input: {
+  userId: number;
+  planType: string;
+  amount: string;
+  paymentMethod: string;
+  paymentRequestId: string;
+  status?: string;
+}): Promise<PaymentRecord> {
+  const record: PaymentRecord = {
+    id: nextPaymentId++,
+    status: "pending",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...input,
+  };
+
+  if (useMemoryStore) {
+    memoryPayments.push(record);
+    return { ...record };
+  }
+
+  const { db, upiPaymentsTable } = await loadDbModule();
+  const [created] = await db.insert(upiPaymentsTable).values({
+    userId: record.userId,
+    planType: record.planType,
+    amount: record.amount,
+    paymentMethod: record.paymentMethod,
+    paymentRequestId: record.paymentRequestId,
+    status: record.status || "pending",
+  }).returning();
+
+  return { ...created, createdAt: new Date(created.createdAt), updatedAt: new Date(created.updatedAt) };
+}
+
+export async function getPaymentRecordByRequestId(paymentRequestId: string): Promise<PaymentRecord | null> {
+  if (useMemoryStore) {
+    const found = memoryPayments.find(p => p.paymentRequestId === paymentRequestId);
+    return found ? { ...found } : null;
+  }
+
+  const { db, upiPaymentsTable } = await loadDbModule();
+  const [found] = await db.select().from(upiPaymentsTable).where(eq(upiPaymentsTable.paymentRequestId, paymentRequestId)).limit(1);
+  return found ? { ...found, createdAt: new Date(found.createdAt), updatedAt: new Date(found.updatedAt) } : null;
+}
+
+export async function getPaymentRecordById(id: number): Promise<PaymentRecord | null> {
+  if (useMemoryStore) {
+    const found = memoryPayments.find(p => p.id === id);
+    return found ? { ...found } : null;
+  }
+
+  const { db, upiPaymentsTable } = await loadDbModule();
+  const [found] = await db.select().from(upiPaymentsTable).where(eq(upiPaymentsTable.id, id)).limit(1);
+  return found ? { ...found, createdAt: new Date(found.createdAt), updatedAt: new Date(found.updatedAt) } : null;
+}
+
+export async function updatePaymentRecord(
+  id: number,
+  updates: Partial<Omit<PaymentRecord, "id" | "userId" | "createdAt">>
+): Promise<PaymentRecord | null> {
+  const now = new Date();
+  if (useMemoryStore) {
+    const index = memoryPayments.findIndex(p => p.id === id);
+    if (index === -1) return null;
+    memoryPayments[index] = { ...memoryPayments[index], ...updates, updatedAt: now };
+    return { ...memoryPayments[index] };
+  }
+
+  const { db, upiPaymentsTable } = await loadDbModule();
+  const [updated] = await db
+    .update(upiPaymentsTable)
+    .set({ ...updates, updatedAt: now })
+    .where(eq(upiPaymentsTable.id, id))
+    .returning();
+  return updated ? { ...updated, createdAt: new Date(updated.createdAt), updatedAt: new Date(updated.updatedAt) } : null;
+}
+
+export async function listPayments(): Promise<any[]> {
+  if (useMemoryStore) {
+    return memoryPayments.map(p => {
+      const user = memoryUsers.find(u => u.id === p.userId);
+      return {
+        ...p,
+        userName: user?.name || "Unknown",
+        userEmail: user?.email || "Unknown",
+      };
+    });
+  }
+
+  const { db, upiPaymentsTable, usersTable } = await loadDbModule();
+  const payments = await db
+    .select({
+      id: upiPaymentsTable.id,
+      userId: upiPaymentsTable.userId,
+      planType: upiPaymentsTable.planType,
+      amount: upiPaymentsTable.amount,
+      paymentMethod: upiPaymentsTable.paymentMethod,
+      paymentRequestId: upiPaymentsTable.paymentRequestId,
+      status: upiPaymentsTable.status,
+      createdAt: upiPaymentsTable.createdAt,
+      updatedAt: upiPaymentsTable.updatedAt,
+      userName: usersTable.name,
+      userEmail: usersTable.email,
+    })
+    .from(upiPaymentsTable)
+    .leftJoin(usersTable, eq(upiPaymentsTable.userId, usersTable.id))
+    .orderBy(desc(upiPaymentsTable.createdAt));
+
+  return payments;
+}
+
 
 export async function listUsers(): Promise<UserRecord[]> {
   if (useMemoryStore) {

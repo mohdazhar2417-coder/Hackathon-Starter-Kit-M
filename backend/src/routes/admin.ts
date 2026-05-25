@@ -111,4 +111,41 @@ router.get("/activity", async (req, res): Promise<void> => {
   res.json(activity);
 });
 
+router.get("/upi-payments", async (req, res): Promise<void> => {
+  const { listPayments } = await import("../lib/store.js");
+  const payments = await listPayments();
+  res.json(payments);
+});
+
+router.post("/upi-payments/:id/approve", async (req, res): Promise<void> => {
+  const { getPaymentRecordById, updatePaymentRecord, updateUser } = await import("../lib/store.js");
+  const id = parseInt(req.params.id);
+  const payment = await getPaymentRecordById(id);
+  if (!payment) {
+    res.status(404).json({ error: "Payment request not found" });
+    return;
+  }
+
+  await updatePaymentRecord(id, { status: "completed" });
+  await updateUser(payment.userId, {
+    subscriptionStatus: "active",
+    planType: payment.planType,
+  });
+
+  res.json({ success: true });
+});
+
+router.post("/upi-payments/:id/reject", async (req, res): Promise<void> => {
+  const { getPaymentRecordById, updatePaymentRecord } = await import("../lib/store.js");
+  const id = parseInt(req.params.id);
+  const payment = await getPaymentRecordById(id);
+  if (!payment) {
+    res.status(404).json({ error: "Payment request not found" });
+    return;
+  }
+
+  await updatePaymentRecord(id, { status: "failed" });
+  res.json({ success: true });
+});
+
 export default router;

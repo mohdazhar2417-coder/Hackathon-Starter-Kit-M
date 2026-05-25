@@ -67,6 +67,19 @@ const useAdminActivity = () => {
   });
 };
 
+const useAdminPayments = () => {
+  return useQuery({
+    queryKey: ["admin", "payments"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/upi-payments", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
+      });
+      if (!res.ok) throw new Error("Failed to fetch payments");
+      return res.json();
+    }
+  });
+};
+
 export default function AdminPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
@@ -81,7 +94,36 @@ export default function AdminPage() {
   const { data: users = [], isLoading: usersLoading } = useAdminUsers();
   const { data: analytics } = useAdminAnalytics();
   const { data: activity = [] } = useAdminActivity();
+  const { data: payments = [] } = useAdminPayments();
   
+  const approvePaymentMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/admin/upi-payments/${id}/approve`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
+      });
+      if (!res.ok) throw new Error("Failed to approve payment");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "payments"] });
+      toast({ title: "Payment Approved", description: "The user has been upgraded successfully." });
+    }
+  });
+
+  const rejectPaymentMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/admin/upi-payments/${id}/reject`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
+      });
+      if (!res.ok) throw new Error("Failed to reject payment");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "payments"] });
+      toast({ title: "Payment Rejected", description: "The payment status was updated to failed." });
+    }
+  });
+
   const deleteProgram = useAdminDeleteProgram();
   const deleteUserMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -187,7 +229,7 @@ export default function AdminPage() {
         </div>
 
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="bg-white/5 border-white/10 p-1 h-auto grid grid-cols-4 w-full md:w-auto max-w-md">
+          <TabsList className="bg-white/5 border-white/10 p-1 h-auto grid grid-cols-5 w-full md:w-auto max-w-xl">
             <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2 text-xs">
               <BarChart3 className="h-3.5 w-3.5 mr-2" /> Analytics
             </TabsTrigger>
@@ -196,6 +238,9 @@ export default function AdminPage() {
             </TabsTrigger>
             <TabsTrigger value="programs" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2 text-xs">
               <Code2 className="h-3.5 w-3.5 mr-2" /> Programs
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2 text-xs">
+              <CreditCard className="h-3.5 w-3.5 mr-2" /> Payments
             </TabsTrigger>
             <TabsTrigger value="activity" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2 text-xs">
               <Activity className="h-3.5 w-3.5 mr-2" /> Activity
@@ -476,6 +521,106 @@ export default function AdminPage() {
                         </TableCell>
                       </TableRow>
                     ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Payments Tab */}
+          <TabsContent value="payments" className="animate-in fade-in slide-in-from-bottom-2">
+            <Card className="bg-card/40 border-white/5">
+              <CardHeader className="flex flex-row items-center justify-between pb-6">
+                <div>
+                  <CardTitle className="text-lg">Payment Transactions</CardTitle>
+                  <CardDescription>Review and approve manual or gateway payments</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader className="bg-white/5">
+                    <TableRow className="border-white/5 hover:bg-transparent">
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Plan</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Method</TableHead>
+                      <TableHead>Payment Request ID</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {payments.map((pay: any) => (
+                      <TableRow key={pay.id} className="border-white/5 hover:bg-white/[0.02]">
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-white/90 text-sm">{pay.userName}</p>
+                            <p className="text-xs text-muted-foreground">{pay.userEmail}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="uppercase text-[10px]">
+                            {pay.planType}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm text-primary font-bold">
+                          ₹{pay.amount}
+                        </TableCell>
+                        <TableCell className="text-xs font-semibold text-white/70">
+                          {pay.paymentMethod.replace("upi_", "UPI ").toUpperCase()}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-white/50">
+                          {pay.paymentRequestId}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            pay.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : pay.status === "failed" ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse"
+                          }`}>
+                            {pay.status.toUpperCase()}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-xs text-white/60">
+                          {format(new Date(pay.createdAt), "dd MMM yyyy, hh:mm a")}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {pay.status === "pending" ? (
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => approvePaymentMutation.mutate(pay.id)}
+                                className="h-7 text-xs bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500 hover:text-white text-emerald-400 font-bold"
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => rejectPaymentMutation.mutate(pay.id)}
+                                className="h-7 text-xs bg-red-500/10 border-red-500/20 hover:bg-red-50 hover:text-white text-red-400 font-bold"
+                              >
+                                Reject
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-white/30 uppercase tracking-widest font-black">
+                              Verified
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {payments.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-20 text-muted-foreground">
+                          <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-10" />
+                          <p>No transactions registered in the database.</p>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
