@@ -27,12 +27,14 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 // Custom hooks for new admin endpoints
 const useAdminUsers = () => {
   return useQuery({
     queryKey: ["admin", "users"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/users", {
+      const res = await fetch(`${API_BASE_URL}/api/admin/users`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
       if (!res.ok) throw new Error("Failed to fetch users");
@@ -45,7 +47,7 @@ const useAdminAnalytics = () => {
   return useQuery({
     queryKey: ["admin", "analytics"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/analytics", {
+      const res = await fetch(`${API_BASE_URL}/api/admin/analytics`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
       if (!res.ok) throw new Error("Failed to fetch analytics");
@@ -58,7 +60,7 @@ const useAdminActivity = () => {
   return useQuery({
     queryKey: ["admin", "activity"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/activity", {
+      const res = await fetch(`${API_BASE_URL}/api/admin/activity`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
       if (!res.ok) throw new Error("Failed to fetch activity");
@@ -71,7 +73,7 @@ const useAdminPayments = () => {
   return useQuery({
     queryKey: ["admin", "payments"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/upi-payments", {
+      const res = await fetch(`${API_BASE_URL}/api/admin/upi-payments`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
       if (!res.ok) throw new Error("Failed to fetch payments");
@@ -98,7 +100,7 @@ export default function AdminPage() {
   
   const approvePaymentMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/upi-payments/${id}/approve`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/upi-payments/${id}/approve`, {
         method: "POST",
         headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
@@ -112,7 +114,7 @@ export default function AdminPage() {
 
   const rejectPaymentMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/upi-payments/${id}/reject`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/upi-payments/${id}/reject`, {
         method: "POST",
         headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
@@ -127,7 +129,7 @@ export default function AdminPage() {
   const deleteProgram = useAdminDeleteProgram();
   const deleteUserMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/users/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${localStorage.getItem("logiclens_token")}` }
       });
