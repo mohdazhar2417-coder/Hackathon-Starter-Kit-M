@@ -10,11 +10,11 @@ const router = Router();
 
 // Pricing constants in INR
 const PRICING = {
-  pro: "299",
+  pro: "8",
   institutional: "9999",
 };
 
-// 1. Create a Payment Intent (Unified entry point for Zomato UPI & Card/Netbanking flows)
+// 1. Create a Payment Intent (UPI-only direct QR/intent setup)
 router.post("/create-payment-intent", authMiddleware, async (req: Request, res: Response): Promise<void> => {
   const { userId } = (req as Request & { user: AuthPayload }).user;
   const { planType, paymentMethod } = req.body;
@@ -29,102 +29,55 @@ router.post("/create-payment-intent", authMiddleware, async (req: Request, res: 
   const plan = isInstitutional ? "institutional" : "pro";
   const amount = PRICING[plan];
 
-  const hasInstamojoKeys =
-    env.INSTAMOJO_API_KEY &&
-    env.INSTAMOJO_API_KEY !== "placeholder" &&
-    env.INSTAMOJO_API_KEY.trim() !== "" &&
-    env.INSTAMOJO_AUTH_TOKEN &&
-    env.INSTAMOJO_AUTH_TOKEN !== "placeholder" &&
-    env.INSTAMOJO_AUTH_TOKEN.trim() !== "";
-
-  const paymentRequestId = hasInstamojoKeys
-    ? "IM_" + crypto.randomBytes(8).toString("hex") // temporary, will overwrite with Instamojo API response
-    : "SIM_REQ_" + crypto.randomBytes(12).toString("hex");
+  // We are bypassing Instamojo and directly generating local UPI scanner flows
+  const paymentRequestId = "UPI_REQ_" + crypto.randomBytes(12).toString("hex");
 
   // Construct standard UPI deep link
-  const vpa = env.UPI_VPA || "mohdazhar2417@okaxis";
-  const upiUrl = `upi://pay?pa=${vpa}&pn=LogicLens&am=${amount}&cu=INR&tn=LogicLens_${plan}_${userId}`;
+  const vpa = env.UPI_VPA || "christinajoseph26th@oksbi";
+  const upiUrl = `upi://pay?pa=${vpa}&pn=Christina%20Joseph&am=${amount}&cu=INR&tn=LogicLens_${plan}_${userId}`;
 
-  if (!hasInstamojoKeys) {
-    // Simulated Offline Flow
-    const record = await createPaymentRecord({
-      userId,
-      planType: plan,
-      amount,
-      paymentMethod,
-      paymentRequestId,
-      status: "pending",
-    });
+  // Save payment request in DB
+  const record = await createPaymentRecord({
+    userId,
+    planType: plan,
+    amount,
+    paymentMethod,
+    paymentRequestId,
+    status: "pending",
+  });
 
-    const mockCheckoutUrl = `${env.BACKEND_URL}/api/payments/mock-gateway?id=${paymentRequestId}`;
+  res.json({
+    paymentRequestId,
+    upiUrl,
+    isMock: false,
+  });
+});
 
-    res.json({
-      paymentRequestId,
-      upiUrl,
-      redirectUrl: mockCheckoutUrl,
-      isMock: true,
-    });
+// 1b. Submit UTR for Admin Verification
+router.post("/submit-utr", authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  const { requestId, utr } = req.body;
+
+  if (!utr || !/^\d{12}$/.test(utr)) {
+    res.status(400).json({ error: "Invalid UTR format. Must be a 12-digit transaction reference number." });
     return;
   }
 
-  // Real Instamojo API request flow
-  try {
-    const isSandbox = env.INSTAMOJO_SANDBOX === "true" || env.INSTAMOJO_SANDBOX === "1";
-    const instamojoBaseUrl = isSandbox
-      ? "https://test.instamojo.com/api/1.1"
-      : "https://www.instamojo.com/api/1.1";
+  const record = await getPaymentRecordByRequestId(requestId);
 
-    const params = new URLSearchParams();
-    params.append("amount", amount);
-    params.append("purpose", `LogicLens Premium (${plan.toUpperCase()})`);
-    params.append("buyer_name", user.name);
-    params.append("email", user.email);
-    params.append("redirect_url", `${env.BACKEND_URL}/api/payments/instamojo-callback`);
-    params.append("webhook", `${env.BACKEND_URL}/api/payments/instamojo-webhook`);
-    params.append("allow_repeated_payments", "false");
-
-    const response = await fetch(`${instamojoBaseUrl}/payment-requests/`, {
-      method: "POST",
-      headers: {
-        "X-Api-Key": env.INSTAMOJO_API_KEY!,
-        "X-Auth-Token": env.INSTAMOJO_AUTH_TOKEN!,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params.toString(),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Instamojo creation failed: ${errorText}`);
-    }
-
-    const data = await response.json() as any;
-    const realRequestId = data.payment_request.id;
-    const redirectUrl = data.payment_request.longurl;
-
-    // Create payment intent record with real Instamojo request ID
-    await createPaymentRecord({
-      userId,
-      planType: plan,
-      amount,
-      paymentMethod,
-      paymentRequestId: realRequestId,
-      status: "pending",
-    });
-
-    res.json({
-      paymentRequestId: realRequestId,
-      upiUrl,
-      redirectUrl,
-      isMock: false,
-    });
-  } catch (err: any) {
-    console.error("Instamojo initiation error:", err);
-    res.status(500).json({ error: err.message });
+  if (!record) {
+    res.status(404).json({ error: "Payment reference not found" });
+    return;
   }
+
+  await updatePaymentRecord(record.id, {
+    utr: utr,
+    status: "pending" // ensures it shows as pending in admin
+  });
+
+  res.json({ success: true });
 });
 
-// 2. Poll Status Endpoint (Checks the DB status, performs server-to-server check if pending)
+// 2. Poll Status Endpoint (Checks local DB status for admin approvals)
 router.get("/status/:requestId", async (req: Request, res: Response): Promise<void> => {
   const { requestId } = req.params;
   const record = await getPaymentRecordByRequestId(requestId);
@@ -132,48 +85,6 @@ router.get("/status/:requestId", async (req: Request, res: Response): Promise<vo
   if (!record) {
     res.status(404).json({ error: "Payment request not found" });
     return;
-  }
-
-  // If status is pending and keys are configured, check with Instamojo API
-  const hasInstamojoKeys =
-    env.INSTAMOJO_API_KEY &&
-    env.INSTAMOJO_AUTH_TOKEN &&
-    !requestId.startsWith("SIM_REQ_");
-
-  if (record.status === "pending" && hasInstamojoKeys) {
-    try {
-      const isSandbox = env.INSTAMOJO_SANDBOX === "true" || env.INSTAMOJO_SANDBOX === "1";
-      const instamojoBaseUrl = isSandbox
-        ? "https://test.instamojo.com/api/1.1"
-        : "https://www.instamojo.com/api/1.1";
-
-      const response = await fetch(`${instamojoBaseUrl}/payment-requests/${requestId}/`, {
-        headers: {
-          "X-Api-Key": env.INSTAMOJO_API_KEY!,
-          "X-Auth-Token": env.INSTAMOJO_AUTH_TOKEN!,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json() as any;
-        const imStatus = data.payment_request.status; // e.g. "Completed"
-        
-        // In Instamojo: "Completed" means paid
-        if (imStatus === "Completed" || data.payment_request.payments?.some((p: any) => p.status === "Credit")) {
-          await updatePaymentRecord(record.id, { status: "completed" });
-          await updateUser(record.userId, {
-            subscriptionStatus: "active",
-            planType: record.planType,
-          });
-          record.status = "completed";
-        } else if (imStatus === "Failed") {
-          await updatePaymentRecord(record.id, { status: "failed" });
-          record.status = "failed";
-        }
-      }
-    } catch (err) {
-      console.error("Error doing server-to-server Instamojo verify:", err);
-    }
   }
 
   res.json({ status: record.status });

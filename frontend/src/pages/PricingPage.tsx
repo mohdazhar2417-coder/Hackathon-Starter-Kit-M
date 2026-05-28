@@ -68,7 +68,7 @@ export default function PricingPage() {
     if (planName === "Free") return;
     setCheckoutPlan({ 
       name: planName, 
-      price: planName === "Institutional" ? "9999" : "299" 
+      price: planName === "Institutional" ? "9999" : "8" 
     });
     setIsCheckoutOpen(true);
   };

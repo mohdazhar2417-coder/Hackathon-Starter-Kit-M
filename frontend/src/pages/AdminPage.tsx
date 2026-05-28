@@ -544,6 +544,7 @@ export default function AdminPage() {
                       <TableHead>Plan</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Method</TableHead>
+                      <TableHead>UTR / Ref No</TableHead>
                       <TableHead>Payment Request ID</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
@@ -569,6 +570,15 @@ export default function AdminPage() {
                         </TableCell>
                         <TableCell className="text-xs font-semibold text-white/70">
                           {pay.paymentMethod.replace("upi_", "UPI ").toUpperCase()}
+                        </TableCell>
+                        <TableCell>
+                          {pay.utr ? (
+                            <span className="font-mono text-xs text-emerald-400 font-bold bg-emerald-500/5 px-2.5 py-1 rounded border border-emerald-500/10">
+                              {pay.utr}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-white/20 italic">Not Submitted</span>
+                          )}
                         </TableCell>
                         <TableCell className="font-mono text-xs text-white/50">
                           {pay.paymentRequestId}
@@ -615,7 +625,7 @@ export default function AdminPage() {
                     ))}
                     {payments.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-20 text-muted-foreground">
+                        <TableCell colSpan={9} className="text-center py-20 text-muted-foreground">
                           <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-10" />
                           <p>No transactions registered in the database.</p>
                         </TableCell>

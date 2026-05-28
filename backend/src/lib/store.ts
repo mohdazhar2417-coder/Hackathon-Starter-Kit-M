@@ -230,6 +230,7 @@ export interface PaymentRecord {
   amount: string;
   paymentMethod: string;
   paymentRequestId: string;
+  utr?: string | null;
   status: string; // "pending" | "completed" | "failed"
   createdAt: Date;
   updatedAt: Date;
@@ -244,6 +245,7 @@ export async function createPaymentRecord(input: {
   amount: string;
   paymentMethod: string;
   paymentRequestId: string;
+  utr?: string | null;
   status?: string;
 }): Promise<PaymentRecord> {
   const record: PaymentRecord = {
@@ -266,6 +268,7 @@ export async function createPaymentRecord(input: {
     amount: record.amount,
     paymentMethod: record.paymentMethod,
     paymentRequestId: record.paymentRequestId,
+    utr: record.utr || null,
     status: record.status || "pending",
   }).returning();
 
@@ -336,6 +339,7 @@ export async function listPayments(): Promise<any[]> {
       amount: upiPaymentsTable.amount,
       paymentMethod: upiPaymentsTable.paymentMethod,
       paymentRequestId: upiPaymentsTable.paymentRequestId,
+      utr: upiPaymentsTable.utr,
       status: upiPaymentsTable.status,
       createdAt: upiPaymentsTable.createdAt,
       updatedAt: upiPaymentsTable.updatedAt,
